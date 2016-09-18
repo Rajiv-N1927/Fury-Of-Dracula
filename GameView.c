@@ -15,6 +15,7 @@ typedef struct player {
   LocationID trail[TRAIL_SIZE];  //The trail
   int health;         //The current health of the player
 } Player;
+
 struct gameView {
     Player player[NUM_PLAYERS];
     int score;
@@ -22,18 +23,21 @@ struct gameView {
     Round roundNo;
     Map newMap;
 };
+//Initialise all the players
 static Player *setPlayers(Player p[NUM_PLAYERS]) {
-  int i;
+  int i, j;
   for ( i = 0; i < NUM_PLAYERS; i++ ) {
     p[i].playerID = i;
     p[i].curPos   = UNKNOWN_LOCATION;
     p[i].health   = (i == PLAYER_DRACULA ? GAME_START_BLOOD_POINTS
                     : GAME_START_HUNTER_LIFE_POINTS);
-    p[i].trail    = {UNKNOWN_LOCATION};
+    for ( j = 0; j < TRAIL_SIZE; j++ ) {
+      p[i].trail[j] = UNKNOWN_LOCATION;
+    }
   }
   return p;
 }
-
+//Initialise the gameView struct
 static GameView init() {
   GameView gameView = (GameView)malloc(sizeof(struct gameView));
   setPlayers(gameView->player);
@@ -47,18 +51,13 @@ static GameView init() {
 //How this would be used setTrail(currentView, )
 void setTrail(GameView currentView, PlayerID pID, LocationID locID) {
   int i;
-  for ( i = 0; i < 6; i++ ) {
-    if ( roundNo >= 6 ) {
-      currentView->player[pID].trail[i] = currentView->player[pID].trail[i+1];
-      if ( currentView->player[pID].trail[TRAIL_SIZE-1] == UNKNOWN_LOCATION ) {
-        currentView->player[pID].trail[TRAIL_SIZE-1] = locID;
-      }
-    } else {
-      if ( currentView->player[pID].trail[i] == UNKNOWN_LOCATION ) {
-        currentView->player[pID].trail[i] = locID;
-        break;
-      }
-    }
+  LocationID refTrail[TRAIL_SIZE];
+  for ( i = 0; i < 5; i++ ) {
+    refTrail[i+1] = currentView->player[pID].trail[i];
+  }
+  refTrail[0] = locID;
+  for ( i = 0; i < TRAIL_SIZE; i++ ) {
+    currentView->player[pID].trail[i] = refTrail[i];
   }
 }
 //Converts the player char to ID
