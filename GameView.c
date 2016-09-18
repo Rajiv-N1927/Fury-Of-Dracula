@@ -1,18 +1,37 @@
 // GameView.c ... GameView ADT implementation
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include "Globals.h"
 #include "Game.h"
 #include "GameView.h"
+
+#include "Map.h"
 // #include "Map.h" ... if you decide to use the Map ADT
-     
+typedef struct player {
+  PlayerID playerID;  //Establish an ID for the player
+  LocationID curPos;       //The current position of the Player
+  LocationID *trail;  //The trail
+  int health;         //The current health of the player
+} Player;
 struct gameView {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+    //Player players[NUM_PLAYERS];
+    //Round round
+    //int turnNo
     int hello;
 };
-     
 
+int main( int argc, char* argv[] ) {
+  Map AMap = newMap();
+  Player p = {0, LONDON, NULL, 9};
+  printf("%d\n", getListSize(AMap->connections[p.curPos]));
+  //VList start;
+  // for ( start = AMap->connections[p.curPos]; start != NULL; start = start->next ) {
+  //   printf("%d\n", start->v);
+  // }
+  return 0;
+}
 // Creates a new GameView to summarise the current state of the game
 GameView newGameView(char *pastPlays, PlayerMessage messages[])
 {
@@ -21,8 +40,8 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[])
     gameView->hello = 42;
     return gameView;
 }
-     
-     
+
+
 // Frees all memory previously allocated for the GameView toBeDeleted
 void disposeGameView(GameView toBeDeleted)
 {

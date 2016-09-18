@@ -7,20 +7,7 @@
 #include <stdlib.h>
 #include "Map.h"
 #include "Places.h"
-
-typedef struct vNode *VList;
-
-struct vNode {
-   LocationID  v;    // ALICANTE, etc
-   TransportID type; // ROAD, RAIL, BOAT
-   VList       next; // link to next node
-};
-
-struct MapRep {
-   int   nV;         // #vertices
-   int   nE;         // #edges
-   VList connections[NUM_MAP_LOCATIONS]; // array of lists
-};
+#include "Globals.h"
 
 static void addConnections(Map);
 
@@ -77,7 +64,11 @@ static int inVList(VList L, LocationID v, TransportID type)
 	}
 	return 0;
 }
-
+int getListSize(VList L) {
+  int i; VList start;
+  for ( i = 0, start = L; start != NULL; start = start->next, i++ );
+  return i;
+}
 // Add a new edge to the Map/Graph
 void addLink(Map g, LocationID start, LocationID end, TransportID type)
 {
@@ -110,7 +101,12 @@ void showMap(Map g)
       }
    }
 }
-
+//Get the List size
+// int ListSize(Map g, VNode list) {
+//   int i;
+//   for (cur = L, i = 0; cur != NULL; cur = cur->next, i++);
+//   return i;
+// }
 // Return count of nodes
 int numV(Map g)
 {
