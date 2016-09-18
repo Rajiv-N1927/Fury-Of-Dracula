@@ -11,33 +11,49 @@
 // #include "Map.h" ... if you decide to use the Map ADT
 typedef struct player {
   PlayerID playerID;  //Establish an ID for the player
-  LocationID curPos;       //The current position of the Player
+  LocationID curPos;  //The current position of the Player
   LocationID *trail;  //The trail
   int health;         //The current health of the player
 } Player;
 struct gameView {
-    //Player players[NUM_PLAYERS];
-    //Round round
-    //int turnNo
-    int hello;
+    Player player[NUM_PLAYERS];
+    Round roundNo;
+    int turnNo;
+    Map newMap;
 };
 
 int main( int argc, char* argv[] ) {
-  Map AMap = newMap();
-  Player p = {0, LONDON, NULL, 9};
-  printf("%d\n", getListSize(AMap->connections[p.curPos]));
-  //VList start;
-  // for ( start = AMap->connections[p.curPos]; start != NULL; start = start->next ) {
-  //   printf("%d\n", start->v);
-  // }
+  PlayerMessage msg[] = {"Test"};
+  newGameView("qwtrqwef", msg);
   return 0;
 }
+Player *setPlayers(Player p[NUM_PLAYERS]) {
+  int i;
+  for ( i = 0; i < NUM_PLAYERS; i++ ) {
+    p[i].playerID = i;
+    p[i].curPos   = NOWHERE;
+    p[i].trail    = NULL;
+    p[i].health   = (i == 4 ? GAME_START_BLOOD_POINTS
+                    : GAME_START_HUNTER_LIFE_POINTS);
+  }
+  return p;
+}
+
+GameView init() {
+  GameView gameView = (GameView)malloc(sizeof(struct gameView));
+  setPlayers(gameView->player);
+  gameView->roundNo = 0;
+  gameView->turnNo  = 0;
+  gameView->newMap  = newMap();
+
+  return gameView;
+}
+
 // Creates a new GameView to summarise the current state of the game
 GameView newGameView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    GameView gameView = malloc(sizeof(struct gameView));
-    gameView->hello = 42;
+    GameView gameView = init();
     return gameView;
 }
 
