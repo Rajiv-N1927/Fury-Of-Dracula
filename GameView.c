@@ -17,37 +17,41 @@ typedef struct player {
 } Player;
 struct gameView {
     Player player[NUM_PLAYERS];
-    Round roundNo;
+    int score;
     int turnNo;
+    Round roundNo;
     Map newMap;
 };
-
-int main( int argc, char* argv[] ) {
-  PlayerMessage msg[] = {"Test"};
-  newGameView("qwtrqwef", msg);
-  return 0;
-}
-Player *setPlayers(Player p[NUM_PLAYERS]) {
+static Player *setPlayers(Player p[NUM_PLAYERS]) {
   int i;
   for ( i = 0; i < NUM_PLAYERS; i++ ) {
     p[i].playerID = i;
     p[i].curPos   = NOWHERE;
     p[i].trail    = NULL;
-    p[i].health   = (i == 4 ? GAME_START_BLOOD_POINTS
+    p[i].health   = (i == PLAYER_DRACULA ? GAME_START_BLOOD_POINTS
                     : GAME_START_HUNTER_LIFE_POINTS);
   }
   return p;
 }
 
-GameView init() {
+static GameView init() {
   GameView gameView = (GameView)malloc(sizeof(struct gameView));
   setPlayers(gameView->player);
   gameView->roundNo = 0;
   gameView->turnNo  = 0;
+  gameView->score   = GAME_START_SCORE;
   gameView->newMap  = newMap();
 
   return gameView;
 }
+//
+// int main( int argc, char* argv[] ) {
+//   GameView newView = init();
+//   newView->turnNo = 4;
+//   printf("testing: %d playerID: %d\n", newView->turnNo,
+//                             newView->player[newView->turnNo].playerID);
+//   return 0;
+// }
 
 // Creates a new GameView to summarise the current state of the game
 GameView newGameView(char *pastPlays, PlayerMessage messages[])
@@ -59,9 +63,15 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[])
 
 
 // Frees all memory previously allocated for the GameView toBeDeleted
+void freeTrail(Player p[NUM_PLAYERS]) {
+  int i;
+  for ( i = 0; i < NUM_PLAYERS; i++ ) {
+    free(p[i].trail);
+  }
+}
 void disposeGameView(GameView toBeDeleted)
 {
-    //COMPLETE THIS IMPLEMENTATION
+    freeTrail( toBeDeleted->player );
     free( toBeDeleted );
 }
 
@@ -71,36 +81,31 @@ void disposeGameView(GameView toBeDeleted)
 // Get the current round
 Round getRound(GameView currentView)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+  return currentView->roundNo;
 }
 
 // Get the id of current player - ie whose turn is it?
 PlayerID getCurrentPlayer(GameView currentView)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+  return currentView->player[currentView->turnNo--].playerID;
 }
 
 // Get the current score
 int getScore(GameView currentView)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+  return currentView->score;
 }
 
 // Get the current health points for a given player
 int getHealth(GameView currentView, PlayerID player)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return currentView->player[player].health;
 }
 
 // Get the current location id of a given player
 LocationID getLocation(GameView currentView, PlayerID player)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return currentView->player[player].curPos;
 }
 
 //// Functions that return information about the history of the game
