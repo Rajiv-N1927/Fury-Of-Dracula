@@ -26,6 +26,9 @@ typedef int PlayerID;
 
 #define NUM_PLAYERS     5
 
+#define TRUE			1
+#define FALSE			0
+
 // Score
 #define GAME_START_SCORE                366
 #define SCORE_LOSS_DRACULA_TURN         1
