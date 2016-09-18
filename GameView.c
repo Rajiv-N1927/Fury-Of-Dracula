@@ -77,14 +77,11 @@ PlayerID charToPlayerID(char p) {
   }
   return thePlayer;
 }
-//
-// int main( int argc, char* argv[] ) {
-//   GameView newView = init();
-//   newView->turnNo = 4;
-//   printf("testing: %d playerID: %d\n", newView->turnNo,
-//                             newView->player[newView->turnNo].playerID);
-//   return 0;
-// }
+
+int main( int argc, char* argv[] ) {
+  printf("player %d\n", 1%5);
+  return 0;
+}
 
 // Creates a new GameView to summarise the current state of the game
 GameView newGameView(char *pastPlays, PlayerMessage messages[])
@@ -120,7 +117,7 @@ Round getRound(GameView currentView)
 // Get the id of current player - ie whose turn is it?
 PlayerID getCurrentPlayer(GameView currentView)
 {
-  return currentView->player[5%currentView->turnNo+1].playerID;
+  return currentView->player[(currentView->turnNo%5)+1].playerID;
 }
 
 // Get the current score
