@@ -104,7 +104,8 @@ void freeTrail(Player p[NUM_PLAYERS]) {
 }
 void disposeGameView(GameView toBeDeleted)
 {
-    freeTrail( toBeDeleted->player );
+    //Need this checked.
+    //freeTrail( toBeDeleted->player );
     free( toBeDeleted );
 }
 
