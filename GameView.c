@@ -78,11 +78,6 @@ PlayerID charToPlayerID(char p) {
   return thePlayer;
 }
 
-int main( int argc, char* argv[] ) {
-  printf("player %d\n", 1%5);
-  return 0;
-}
-
 // Creates a new GameView to summarise the current state of the game
 GameView newGameView(char *pastPlays, PlayerMessage messages[])
 {
