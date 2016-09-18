@@ -28,7 +28,6 @@ typedef int PlayerID;
 
 #define TRUE			1
 #define FALSE			0
-#define OTAKU			TRUE
 
 // Score
 #define GAME_START_SCORE                366
