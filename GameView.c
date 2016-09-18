@@ -146,7 +146,10 @@ LocationID getLocation(GameView currentView, PlayerID player)
 void getHistory(GameView currentView, PlayerID player,
                             LocationID trail[TRAIL_SIZE])
 {
-    trail = currentView->player[player].trail;
+    int i;
+    for ( i = 0; i < TRAIL_SIZE; i++ ) {
+      trail[i] = currentView->player[player].trail[i];
+    }
 }
 
 //// Functions that query the map to find information about connectivity
