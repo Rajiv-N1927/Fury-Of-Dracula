@@ -148,11 +148,60 @@ void getHistory(GameView currentView, PlayerID player,
 //// Functions that query the map to find information about connectivity
 
 // Returns an array of LocationIDs for all directly connected locations
+int CheckUniqueLoc ( LocationID *arr, LocationID lID ) {
+  int i;
+  for ( i = 0; arr[i] != '\0'; i++ ) {
+    if ( arr[i] == lID ) return FALSE;
+  }
+  return TRUE;
+}
+
+LocationID *connectedRail(GameView currView, LocationID lID, Round round) {
+  LocationID *railCons = NULL;
+  railCons[0] = lID;
+  LocationID setLoc = lID;
+  VList start;
+  int index;
+  for ( index = 1, start = currView->newMap->connections[setLoc]; start!= NULL;
+    start = start->next ) {
+    if ( inVList(currView->newMap->connections[setLoc], start->v, RAIL) ) {
+      railCons[index] = start->v;
+      index++;
+      setLoc = start->v;
+    }
+  }
+  railCons[index++] = '\0';
+  return railCons;
+}
 
 LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player, Round round,
                                int road, int rail, int sea)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return NULL;
+    LocationID *locations = NULL;
+    VList head = currentView->newMap->connections[from];
+    locations[0] = head->v;
+    VList start;
+    int locIndex;
+    for ( locIndex = 1, start = head; start != NULL; start = start->next ) {
+      if ( road && inVList(head, start->v, ROAD) ) {
+        if ( CheckUniqueLoc( locations, start->v ) ) {
+          locations[locIndex] = start->v;
+          locIndex++;
+        }
+      } if ( sea && inVList(head, start->v, BOAT) ) {
+        if ( CheckUniqueLoc( locations, start->v ) ) {
+          locations[locIndex] = start->v;
+          locIndex++;
+        }
+      } if ( rail && player != PLAYER_DRACULA ) {
+        int k;
+        LocationID *toAdd = connectedRail(currentView, from, round);
+        for ( k = 0; toAdd[k] != '\0'; k++ ) {
+          locations[locIndex++] = toAdd[k];
+        }
+      }
+    }
+    numLocations = &locIndex;
+    return locations;
 }

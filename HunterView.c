@@ -8,14 +8,8 @@
 #include "HunterView.h"
 #include "Map.h"
 // #include "Map.h" ... if you decide to use the Map ADT
-struct player {
-  PlayerID playerID;  //Establish an ID for the player
-  VNode curPos;       //The current position of the Player
-  int health;         //The current health of the player
-} Player;
 
 struct hunterView {
-
     int hello;
 };
 
@@ -25,13 +19,7 @@ HunterView newHunterView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     HunterView hunterView = malloc(sizeof(struct hunterView));
-    for ( int i = 0; i < NUM_PLAYERS - 1; i++ ) {
-      hunterView->players[i]->playerID = i;
-      hunterView->players[i]->curPos   = NULL;
-      hunterView->health               = GAME_START_HUNTER_LIFE_POINTS;
-    }
-    hunterView->curRound = 0;
-    hunterView->noTurns  = 0;
+    hunterView->hello = 42;
     return hunterView;
 }
 
@@ -92,15 +80,15 @@ void giveMeTheTrail(HunterView currentView, PlayerID player,
 
 //Helper function for whereCanIgo (just a base)
 //Get the List size
-int ListSize(VNode list, int road, int rail, int sea ) {
-  int i; VNode cur;
-  for (cur = list, i = 0; cur != NULL; cur = cur->next ) {
-    if ( sea && inVList(list, cur->v, BOAT) ) i++;
-    if ( rail && inVList(list, cur->v, RAIL) ) i++;
-    if ( road && inVList(list, cur->v, ROAD) ) i++;
-  }
-  return i;
-}
+// int ListSize(VNode list, int road, int rail, int sea ) {
+//   int i; VNode cur;
+//   for (cur = list, i = 0; cur != NULL; cur = cur->next ) {
+//     if ( sea && inVList(list, cur->v, BOAT) ) i++;
+//     if ( rail && inVList(list, cur->v, RAIL) ) i++;
+//     if ( road && inVList(list, cur->v, ROAD) ) i++;
+//   }
+//   return i;
+// }
 //// Functions that query the map to find information about connectivity
 
 // What are my possible next moves (locations)
@@ -108,23 +96,7 @@ int ListSize(VNode list, int road, int rail, int sea ) {
 LocationID *whereCanIgo(HunterView currentView, int *numLocations,
                         int road, int rail, int sea)
 {
-    curID = currentView->noTurns%giveMeTheRound(currentView);
-    VNode toEst = currentView->players[curID]->curPos;
-    VNode start; int i;
-    int size = ListSize(toEst, road, rail, sea);
-    LocationID *posIcanGo = (int *)malloc(size);
-    for ( i = 0, start = toEst; start != NULL && i < size; i++, start = start->next ) {
-      if ( sea && inVList(toEst, start->v, BOAT) ) {
-        posIcanGo[i] = start->v;
-      }
-      else if ( rail && inVList(toEst, start->v, RAIL) ) {
-        posIcanGo[i] = start->v;
-      }
-      else if ( road && inVList(toEst, start->v, ROAD) ) {
-        posIcanGo[i] = start->v;
-      }
-    }
-    return posIcanGo;
+  return NULL;
 }
 
 // What are the specified player's next possible moves

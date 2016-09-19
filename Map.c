@@ -56,7 +56,7 @@ static VList insertVList(VList L, LocationID v, TransportID type)
    return newV;
 }
 
-static int inVList(VList L, LocationID v, TransportID type)
+int inVList(VList L, LocationID v, TransportID type)
 {
 	VList cur;
 	for (cur = L; cur != NULL; cur = cur->next) {
