@@ -200,6 +200,7 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
         for ( k = 0; toAdd[k] != '\0'; k++ ) {
           locations[locIndex++] = toAdd[k];
         }
+        rail = FALSE;
       }
     }
     numLocations = &locIndex;
