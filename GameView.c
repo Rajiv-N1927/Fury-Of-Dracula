@@ -164,7 +164,8 @@ LocationID *connectedRail(GameView currView, LocationID lID, Round round) {
   int index;
   for ( index = 1, start = currView->newMap->connections[setLoc]; start!= NULL;
     start = start->next ) {
-    if ( inVList(currView->newMap->connections[setLoc], start->v, RAIL) ) {
+    if ( inVList(currView->newMap->connections[setLoc], start->v, RAIL)
+        && CheckUniqueLoc(railCons, start->v) ) {
       railCons[index] = start->v;
       index++;
       setLoc = start->v;
@@ -198,7 +199,9 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
         int k;
         LocationID *toAdd = connectedRail(currentView, from, round);
         for ( k = 0; toAdd[k] != '\0'; k++ ) {
-          locations[locIndex++] = toAdd[k];
+          if ( CheckUniqueLoc(locations, toAdd[k]) )
+            locations[locIndex] = toAdd[k];
+            locIndex++;
         }
         rail = FALSE;
       }
