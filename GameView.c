@@ -83,6 +83,8 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     GameView gameView = init();
+    char character = pastPlays[0];
+
     return gameView;
 }
 
@@ -155,7 +157,7 @@ int CheckUniqueLoc ( LocationID *arr, LocationID lID ) {
   }
   return TRUE;
 }
-
+//Try to fix this up
 LocationID *connectedRail(GameView currView, LocationID lID, Round round) {
   LocationID *railCons = NULL;
   railCons[0] = lID;
