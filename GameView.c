@@ -6,6 +6,7 @@
 #include "Globals.h"
 #include "Game.h"
 #include "GameView.h"
+#include "Queue.h"
 
 #include "Map.h"
 // #include "Map.h" ... if you decide to use the Map ADT
@@ -83,7 +84,6 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     GameView gameView = init();
-    char character = pastPlays[0];
 
     return gameView;
 }
@@ -158,56 +158,68 @@ int CheckUniqueLoc ( LocationID *arr, LocationID lID ) {
   return TRUE;
 }
 //Try to fix this up
-LocationID *connectedRail(GameView currView, LocationID lID, Round round) {
-  LocationID *railCons = NULL;
-  railCons[0] = lID;
-  LocationID setLoc = lID;
+LocationID *connectedRail(GameView currentView, LocationID lID, Round round) {
+  //start->nPos->n2Pos
+  //Probably have to crawl(graph) it
+  QHead graph = initQ();
+  int index = 0;
+  LocationID *locs = malloc( sizeof(int)*NUM_MAP_LOCATIONS );
   VList start;
-  int index;
-  for ( index = 1, start = currView->newMap->connections[setLoc]; start!= NULL;
-    start = start->next ) {
-    if ( inVList(currView->newMap->connections[setLoc], start->v, RAIL)
-        && CheckUniqueLoc(railCons, start->v) ) {
-      railCons[index] = start->v;
-      index++;
-      setLoc = start->v;
+  addQ(graph, lID);
+  //printf("%d\n", graph->head->next->Loc);
+  while ( QSize(graph) > 0 ) {
+    int setLoc = deQ(graph);
+    //dispQ(graph);
+    for ( start = currentView->newMap->connections[setLoc];
+      start != NULL; start=start->next )
+    {
+      if ( inVList(currentView->newMap->connections[setLoc], start->v, RAIL) ) {
+        if ( CheckUniqueLoc(locs, start->v) ) {
+          locs[index] = start->v;
+          index++;
+          addQ(graph, start->v);
+        }
+      }
     }
   }
-  railCons[index++] = '\0';
-  return railCons;
+  index++;
+  locs[index] = '\0';
+  for ( int i = 0; locs[i] != '\0'; i++ ) {
+    printf("RAIL: %s\n", idToName(locs[i]));
+  }
+  return locs;
 }
 
 LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player, Round round,
                                int road, int rail, int sea)
 {
-    LocationID *locations = NULL;
-    VList head = currentView->newMap->connections[from];
-    locations[0] = head->v;
-    VList start;
-    int locIndex;
-    for ( locIndex = 1, start = head; start != NULL; start = start->next ) {
-      if ( road && inVList(head, start->v, ROAD) ) {
-        if ( CheckUniqueLoc( locations, start->v ) ) {
-          locations[locIndex] = start->v;
-          locIndex++;
-        }
-      } if ( sea && inVList(head, start->v, BOAT) ) {
-        if ( CheckUniqueLoc( locations, start->v ) ) {
-          locations[locIndex] = start->v;
-          locIndex++;
-        }
-      } if ( rail && player != PLAYER_DRACULA ) {
-        int k;
-        LocationID *toAdd = connectedRail(currentView, from, round);
-        for ( k = 0; toAdd[k] != '\0'; k++ ) {
-          if ( CheckUniqueLoc(locations, toAdd[k]) )
-            locations[locIndex] = toAdd[k];
-            locIndex++;
-        }
-        rail = FALSE;
+  LocationID *arr = malloc( sizeof(LocationID) * NUM_MAP_LOCATIONS );
+  int index = 0;
+  VList head = currentView->newMap->connections[from], start;
+  for ( start = head; start != NULL; start = start->next ) {
+    if ( sea && inVList(head, start->v, BOAT) ) {
+      if ( CheckUniqueLoc( arr, start->v ) ) {
+        arr[index] = start->v;
+        index++;
       }
+    } if ( road && inVList(head, start->v, ROAD) ) {
+      if ( CheckUniqueLoc( arr, start->v ) ) {
+        arr[index] = start->v;
+        index++;
+      }
+    } if ( rail && player != PLAYER_DRACULA ) {
+      LocationID *toAdd = connectedRail(currentView, from, round);
+      for ( int k = 0; toAdd[k] != '\0'; k++ ) {
+       if( CheckUniqueLoc( arr, toAdd[k] ) ) {
+         arr[index] = toAdd[k];
+         index++;
+       }
+      }
+      free(toAdd);
+      rail = FALSE;
     }
-    numLocations = &locIndex;
-    return locations;
+  }
+  arr[index++] = '\0';
+  return arr;
 }

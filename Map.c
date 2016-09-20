@@ -11,22 +11,10 @@
 #include "Queue.h"
 
 static void addConnections(Map);
-void connectedLocs( Map g, LocationID from, int road, int rail, int sea );
-LocationID *disprailLocs(Map g, LocationID s);
+// void connectedLocs( Map g, LocationID from, int road, int rail, int sea );
+// LocationID *connectedRail(Map g, LocationID s);
 // Create a new empty graph (for a map)
 // #Vertices always same as NUM_PLACES
-int main(int argc, char* argv[]) {
-  Map g = newMap();
-  //disprailLocs(g, LONDON);
-  int i = 0;
-  // LocationID *test = disprailLocs(g, LONDON);
-  // while ( test[i] != 0 ) {
-  //   printf("%d\n", test[i]);
-  //   i++;
-  // }
-  connectedLocs(g, LONDON, 1, 1, 1);
-  return 0;
-}
 Map newMap()
 {
    int i;
@@ -118,83 +106,6 @@ void showMap(Map g)
    }
 }
 
-int CheckUniqueLoc ( LocationID *arr, LocationID lID ) {
-  int i;
-  for ( i = 0; arr[i] != '\0'; i++ ) {
-    if ( arr[i] == lID ) return FALSE;
-  }
-  return TRUE;
-}
-LocationID *disprailLocs(Map g, LocationID s) {
-  //start->nPos->n2Pos
-  //Probably have to crawl(graph) it
-  QHead graph = initQ();
-  int index = 0;
-  LocationID locs[NUM_MAP_LOCATIONS];
-  VList start;
-  addQ(graph, s);
-  //printf("%d\n", graph->head->next->Loc);
-  while ( QSize(graph) > 0 ) {
-    int setLoc = deQ(graph);
-    //dispQ(graph);
-    for ( start = g->connections[setLoc]; start != NULL; start=start->next ) {
-      if ( inVList(g->connections[setLoc], start->v, RAIL) ) {
-        if ( CheckUniqueLoc(locs, start->v) ) {
-          locs[index] = start->v;
-          index++;
-          addQ(graph, start->v);
-        }
-      }
-    }
-  }
-  index++; int i;
-  locs[index] = '\0';
-  LocationID *locLoc = locs;
-  // for ( int i = 0; locs[i] != '\0'; i++ ) {
-  //   printf("%s\n", idToName(locs[i]));
-  // }
-  return locLoc;
-}
-void connectedLocs( Map g, LocationID from,
-  int road, int rail, int sea )
-{
-  LocationID arr[NUM_MAP_LOCATIONS];
-  int index = 1;
-  VList head = g->connections[from], start;
-  for ( start = head; start != NULL; start = start->next ) {
-    if ( sea && inVList(head, start->v, BOAT) ) {
-      if ( CheckUniqueLoc( arr, start->v ) ) {
-        arr[index] = start->v;
-        index++;
-      }
-    } if ( road && inVList(head, start->v, ROAD) ) {
-      if ( CheckUniqueLoc( arr, start->v ) ) {
-        arr[index] = start->v;
-        index++;
-      }
-    } if ( rail ) {
-      LocationID *toAdd = disprailLocs(g, start->v);
-      for ( int k = 0; toAdd[k] != '\0'; k++ ) {
-       printf("works? %d\n", toAdd[k]);
-       if( CheckUniqueLoc( arr, start->v ) ) {
-         arr[index] = toAdd[k];
-         index++;
-       }
-      }
-      rail = FALSE;
-    }
-  }
-  arr[index++] = '\0';
-  for ( int k = 0; arr[k]!= '\0'; k++ ) {
-    printf("%d\n", arr[k]);
-  }
-}
-//Get the List size
-// int ListSize(Map g, VNode list) {
-//   int i;
-//   for (cur = L, i = 0; cur != NULL; cur = cur->next, i++);
-//   return i;
-// }
 // Return count of nodes
 int numV(Map g)
 {
