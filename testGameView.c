@@ -249,22 +249,14 @@ int main()
     printf("passed\n", );
     disposeGameView(gv);
 
-    prinf("Test for teleporting to castle dracula on turn 1 to gain 10 blood points\n"); //both sides know he teleported
-    PlayerMessage messages15[] = {""};
-    gv = newGameView("GVI.... SZA.... HNS.... MMU.... DTP....", messages15);
-    assert(getRound(gv) == 1);
-    assert(getHealth(gv, PLAYER_DRACULA) == GAME_START_BLOOD_POINTS + 10);
-    assert(getLocation(gv, PLAYER_DRACULA) == CASTLE_DRACULA);
-    printf("passed\n");
-    disposeGameView(gv);
-
+    
     prinf("Test for hunter's view when getting to a city in dracula trial\n");
     PlayerMessage messages16[] = {"Hello","Rubbish","Stuff","","Mwahahah","Aha!"};
     gv = newGameView("GMI.... SMR.... HMI.... MMR.... DC?T..."
                      "GGE.... SGE.... HGE.... MGE.... DCOT..."
                      "GST.... SST.... HST.... MST.... DFRT..."
                      "GNU.... SNU.... HNU.... MNU.... DC?T..."
-                     "GFRT...", messages14);
+                     "GFRT...", messages16);
     assert(getHealth(gv,PLAYER_LORD_GODALMING) == 7);
     assert(getLocation(gv,PLAYER_LORD_GODALMING) == FRANKFURT;
     getHistory(gv,PLAYER_DRACULA,history);
@@ -283,7 +275,7 @@ int main()
                      "GLE.... SCO.... HCO.... MCO.... DCFT..."
                      "GNA.... SAM.... HAM.... MAM.... DD3T..."
                      "GNA.... SCO.... HBU.... MCO.... DC?T..."
-                     "GPATTT.", messages8);
+                     "GPATTT.", messages17);
     assert(getHealth(gv,PLAYER_LORD_GODALMING) == 3);
     assert(getLocation(gv,PLAYER_LORD_GODALMING) == PARIS);
     getHistory(gv,PLAYER_DRACULA,history);
@@ -297,6 +289,23 @@ int main()
     printf("passed\n");
     disposeGameView(gv);
 
+    printf("Test for Dracula encountering 3 hunters in one round rip\n");
+    PlayerMessage messages18[] = {"Hello","Rubbish","Stuff","","Mwahahah","Aha!"};
+    gv = newGameView("GST.... SMI.... HMI.... MAO.... DGET..."
+                     "GGETD.. SGED... HGED... MEC....", messages18);
+    assert(getLocation(gv,PLAYER_DRACULA) == GENEVA);
+    assert(getHealth(gv,PLAYER_LORD_GODALMING) == 3);
+    assert(getHealth(gv,PLAYER_DR_SEWARD) == 5);
+    assert(getHealth(gv,PLAYER_VAN_HELSING) == 5);
+    assert(getHealth(gv,PLAYER_DRACULA) == GAME_START_BLOOD_POINTS - 30);
+    assert(getLocation(gv,PLAYER_LORD_GODALMING) == GENEVA);
+    assert(getLocation(gv,PLAYER_DR_SEWARD) == GENEVA);
+    assert(getLocation(gv,PLAYER_VAN_HELSING) == GENEVA);
+    assert(getLocation(gv,PLAYER_MINA_HARKER) == ENGLISH_CHANNEL);
+    getHistory(gv,PLAYER_DRACULA,history);
+    assert(history[0] == GENEVA);  
+    printf("passed\n");
+    disposeGameView(gv);
 
 
 
