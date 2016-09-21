@@ -13,6 +13,13 @@
 
 #define MAX_TRAPS 6
 
+#define TURN_SIZE 8 
+
+#define GAME_IN_PROGRESS 0
+#define HUNTER_WIN 1 
+#define DRACULA_WIN -1 
+#define DRAW 100
+
 typedef struct player {
   PlayerID playerID;  //Establish an ID for the player
   LocationID curPos;  //The current position of the Player
@@ -143,15 +150,203 @@ PlayerID charToPlayerID(char p) {
   return thePlayer;
 }
 
-// Creates a new GameView to summarise the current state of the game
+/// Creates a new GameView to summarise the current state of the game 
+// Add this function and the defines at the top 
 GameView newGameView(char *pastPlays, PlayerMessage messages[])
-{
+{ 
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     GameView gameView = init();
 
-    return gameView;
-}
+    int turnIndex = 0; 
+    int actionIndex = 0; 
+    int roundNo = 0; 
+    int turnNo = 1; 
+    int actionLoop;
+    int gameStatus = GAME_IN_PROGRESS; 
 
+    while (pastPlays[turnIndex] != ' ' && gameStatus == GAME_IN_PROGRESS) { // can alternatively have condition while turnIndex < strlen(pastPlays) && gamestatus...
+
+        PlayerID currentPlayer = charToPlayerID(pastPlays[turnIndex]);
+
+        if (currentPlayer == PLAYER_DRACULA) {
+
+            gameView->score -= SCORE_LOSS_DRACULA_TURN;
+
+        } else if (gameView->player[currentPlayer].health <= 0) { // else if hunter who died last round - need to restore hp 
+
+            gameView->player[currentPlayer].health = GAME_START_HUNTER_LIFE_POINTS; 
+
+        }
+
+        actionIndex = turnIndex + 1; // first location char
+
+        char turnAbbrevLocation[3] = {pastPlays[actionIndex], pastPlays[actionIndex+1], '\0'};
+        LocationID turnLocID = abbrevToID(turnAbbrevLocation);
+        gameView->player[currentPlayer].curPos = turnLocID; 
+
+        // void setTrail(GameView currentView, PlayerID pID, LocationID locID) 
+        setTrail(gameView, currentPlayer, turnLocID); // updating trail for current player 
+
+        if (currentPlayer == PLAYER_LORD_GODALMING  || // determining if character rested
+            currentPlayer == PLAYER_DR_SEWARD       || 
+            currentPlayer == PLAYER_VAN_HELSING     || 
+            currentPlayer == PLAYER_MINA_HARKER     ) { 
+
+
+                    if (gameView->player[currentPlayer].trail[0] == gameView->player[currentPlayer].trail[1]) { // hunter has rested and deserves some hp 
+
+                        gameView->player[currentPlayer].health += LIFE_GAIN_REST; 
+
+                        if (gameView->player[currentPlayer].health > GAME_START_HUNTER_LIFE_POINTS) { // if hunters health has exceeded limited, cap it
+
+                            gameView->player[currentPlayer].health = GAME_START_HUNTER_LIFE_POINTS; 
+
+                        }
+
+                    }
+
+                    // DO WE NEED TO DO THIS ? VVVVV 
+                    // This may be for HunterView 
+
+                    /* if (gameView->player[currentPlayer].trail[0] == 'ANY CITY IN DRACULAS TRAIL') { 
+
+                        // all moves that resulted in dracula being in that city 
+                        // have their trail indexes revealed to the hunters 
+
+                    } 
+
+                    switch(gameView->player[currentPlayer].trail[0]) { 
+
+                        case gameView->player[PLAYER_DRACULA].trail[0] : 
+                        case gameView->player[PLAYER_DRACULA].trail[1] :
+                        case gameView->player[PLAYER_DRACULA].trail[2] :
+                        case gameView->player[PLAYER_DRACULA].trail[3] :
+                        case gameView->player[PLAYER_DRACULA].trail[4] :
+                        case gameView->player[PLAYER_DRACULA].trail[5] :
+
+                            // all moves that resulted in dracula being in that city 
+                            // have their trail indexes revealed to the hunters
+
+                            break; 
+
+                        default : 
+
+                            break; 
+
+                    } */ 
+
+        } 
+
+        if (currentPlayer == PLAYER_DRACULA) {
+
+            if (gameView->player[PLAYER_DRACULA].trail[0] == gameView->player[PLAYER_DRACULA].trail[1] &&
+                    isLand(turnLocID)) { // dracula's location is repeated and is in a city 
+
+                // dracula has hidden 
+                // must we do anything with this ? 
+                // note: the hunters will see 'HI' as location if they discover this 
+
+            } 
+
+            if (!isLand(turnLocID))  { // dracula is at sea and therefore loses 2 hp 
+
+                gameView->player[PLAYER_DRACULA].health -= LIFE_LOSS_SEA;
+
+            }
+
+        }
+
+        actionIndex += 2; // now up to first 'action character' GLO >X< .... 
+        // analyse action and take into account effect
+        // change score, location and hp if need be 
+
+        actionLoop = 0;
+
+        if (currentPlayer == PLAYER_LORD_GODALMING  || // determine action effect for hunters 
+            currentPlayer == PLAYER_DR_SEWARD       || 
+            currentPlayer == PLAYER_VAN_HELSING     || 
+            currentPlayer == PLAYER_MINA_HARKER     ) { 
+
+                while (actionLoop < 4 && gameView->player[currentPlayer].health > 0 
+                        && gameStatus == GAME_IN_PROGRESS) { // loops through actions and accounts for effects (only 4 actions per string)
+
+                    if (pastPlays[actionIndex] == 'T') { // trap encountered 
+
+                        gameView->player[currentPlayer].health -= LIFE_LOSS_TRAP_ENCOUNTER;  
+
+                    }
+
+                    if (pastPlays[actionIndex] == 'V') { // immature sk encountered 
+
+                        // may not need to do anything in gameview? 
+                        // need to update immature vampire now and remove so from this location
+                        // updateVampire(turnAbbrevLocation, roundNo, actionVariable)
+                        // action variable can be defined to be the placing, vanquishing or maturing of a vampire
+
+                    }
+
+                    if (pastPlays[actionIndex] == 'D') { // big boy D encountered 
+
+                        gameView->player[currentPlayer].health -= LIFE_LOSS_DRACULA_ENCOUNTER;
+                        gameView->player[PLAYER_DRACULA].health -= LIFE_LOSS_HUNTER_ENCOUNTER;  
+
+                    }
+
+
+                    if (gameView->player[currentPlayer].health <= 0) { // player has died - must TP them and deduct score // we don't restore HP, see below 
+
+                        gameView->score -= SCORE_LOSS_HUNTER_HOSPITAL; 
+                        // apparently we don't have the TP in game history so I guess not in their trail
+                        gameView->player[currentPlayer].curPos = ST_JOSEPH_AND_ST_MARYS; 
+                        // apparently we also don't restore their health till their next turn 
+
+                    }
+
+                    actionLoop++; 
+                    actionIndex++;
+
+                    if (gameView->score <= 0) { 
+
+                        gameStatus = DRACULA_WIN; 
+
+                    }
+
+                    if (gameView->player[PLAYER_DRACULA].health <= 0) {
+
+                        gameStatus = HUNTER_WIN; 
+
+                    }
+
+                    if (gameView->score <= 0 && gameView->player[PLAYER_DRACULA].health <= 0) { 
+
+                        gameStatus = DRAW;
+
+                    }
+
+                }
+
+        } 
+        
+        if (turnNo%5 == 0) { // end of draculas turn and therefore end of that round 
+
+            roundNo++;
+
+        }
+
+        if (currentPlayer == PLAYER_DRACULA && turnLocID == CASTLE_DRACULA) { 
+
+            gameView->player[PLAYER_DRACULA].health += LIFE_GAIN_CASTLE_DRACULA; // dracula regains 10 hp at the end of a turn if he is in his hood
+
+        }
+
+        turnIndex += TURN_SIZE; 
+        turnNo++;  
+
+    }
+
+    return gameView;
+
+}
 
 // Frees all memory previously allocated for the GameView toBeDeleted
 void freeTrail(Player p[NUM_PLAYERS]) {
