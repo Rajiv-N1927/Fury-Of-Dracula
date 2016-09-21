@@ -15,10 +15,65 @@ struct dracView {
 
 // Location and round where/when trap was set
 // To be stored in traps[]
-typedef struct trap {
+typedef struct encounter {
   Round tRound;
   LocationID tLoc;      // DOES THIS BELONG IN GAMEVIEW?
-} Trap;
+} Encounter;
+
+//// Trap functions
+
+// Initalises the array of traps/vampires
+Encounter initEncounters(void)
+{
+  int i;
+
+  // Not sure if this line is necessary
+  Encounter encs[TRAIL_SIZE] = malloc(TRAIL_SIZE*sizeof(struct encounter));
+
+  for(i = 0; i < TRAIL_SIZE; i++)
+  {
+    encs[i].tRound = 0;
+    encs[i].tLoc = -1;
+  }
+  return encs;
+}
+
+
+// Sets a trap/vampire - stores location and round when set
+// then adds the new encounter to traps[]/vamps[]
+// This functions assumes that Dracula's position is updated before
+// this function is called, noting that a trap/vampire is set as he ENTERS a city
+Trap setEnc(Round roundNo, Trap encs[TRAIL_SIZE])
+{
+  int i;
+
+  for(i = 0; i < TRAIL_SIZE; i++)
+  {
+    if(encs[i] == 0)
+    {
+      encsi].tRound = roundNo;
+      encs[i].tLoc = // curPos[PLAYER_DRACULA];
+      return encs; 
+    }   
+  }
+  return encs;
+}
+
+// Checks if a trap falls off the trail/vampire matures.
+// Should be called at the start of every round.
+Trap updateTraps(Gameview currentView, Trap encs[TRAIL_SIZE])
+{
+  int i;
+
+  for(i = 0; i < TRAIL_SIZE; i++)
+  {
+    if(encs[i].tRound + TRAIL_SIZE <= roundNo)
+    {
+      encs[i].tRound = 0;
+      encs[i].tLoc = -1;
+    }
+  }  
+}
 
 
 // Creates a new DracView to summarise the current state of the game
@@ -27,6 +82,84 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     DracView dracView = malloc(sizeof(struct dracView));
     dracView->hello = 42;
+
+    Encounter traps[TRAIL_SIZE] = initEncounters();
+    Encounter vamps[TRAIL_SIZE] = initEncounters();
+    
+    // THE BELOW WAS TAKEN FROM GAMEVIEW AND HAS TO BE TWEAKED FOR DRACVIEW 
+     /* I guess these loops can just be put in dracview
+
+        if (currentPlayer == PLAYER_DRACULA) { 
+
+                while (actionLoop < 2) { // placement phase i.e. if trap or vamp was placed
+
+                    if (pastPlays[actionIndex] == 'V') { // vamp placed
+
+                       // updateVampire(turnAbbrevLocation, roundNo, actionInt)
+                            // need to place an immature vampire here 
+                            // should be something laong the lines of...
+                            // updateVampire(turnAbbrevLocation, roundNo, actionVariable)
+                            // action variable can be defined to be the placing or vanquishing or maturing of a vampire
+                            // we could DEFINE VAMPIRE_PLACE, VAMPIRE_VANQUISH & VAMPIRE_MATURE to determine that 
+
+                    }
+
+
+                    if (pastPlays[actionIndex] == 'T') { // trap placed
+
+                        // updateTraps(turnAbbrevLocation, roundNo, actionInt) 
+                                                        // something like... 
+                            // updateTraps(turnAbbrevLocation, roundNo, actionInt) // actionInt will tell if added or disarmed
+                            // in this case an actionInt of 1 could mean adding a trap here
+                            // we could DEFINE TRAP_ADD & TRAP_DISARM & TRAP_VANISH to determine that 
+
+                    }
+
+                    actionIndex++;
+                    actionLoop++;
+ 
+                }
+
+                actionLoop = 0; // resetting for his 'action' phase
+
+               while (actionLoop < 2 && gameStatus == GAME_IN_PROGRESS) { // loops through actions and accounts for effects (only 4 actions per string)
+
+                    if (pastPlays[actionIndex] == 'V') { // vamp matured
+
+                        // updateVampire(turnAbbrevLocation, roundNo, actionInt)
+                            // action int should signify the maturing of a vampire 
+                            // input location here should not matter 
+                            // based on the round No input, the function should search for the respective vampire and remove it from the array 
+                        gameView->score -= SCORE_LOSS_VAMPIRE_MATURES; 
+
+
+                    }
+
+
+                    if (pastPlays[actionIndex] == 'T') { // trap vanished
+
+                        // updateTraps(turnAbbrevLocation, roundNo, actionInt)
+                            // input location here should not matter  
+                            // based on the action int, the function should knwo to merely search its array and remove any outdated traps
+
+                    }
+
+                    actionIndex++;
+                    actionLoop++;
+
+
+                    if (gameView->score <= 0) { 
+
+                        gameStatus = DRACULA_WIN; 
+
+                    }
+ 
+              }  
+
+
+
+        } */ 
+        
     return dracView;
 }
      
@@ -36,60 +169,6 @@ void disposeDracView(DracView toBeDeleted)
 {
     //COMPLETE THIS IMPLEMENTATION
     free( toBeDeleted );
-}
-
-//// Trap functions
-
-// Initalises the array of traps a
-Trap initTraps(void)
-{
-  int i;
-
-  // Not sure if this line is necessary
-  Trap traps[TRAIL_SIZE] = malloc(TRAIL_SIZE*sizeof(struct trap));
-
-  for(i = 0; i < TRAIL_SIZE; i++)
-  {
-    traps[i].tRound = 0;
-    traps[i].tLoc = -1;
-  }
-  return traps;
-}
-
-// Sets a trap - stores location and round when set
-// then adds the new trap to traps[]
-// This functions assumes that Dracula's position is updated before
-// this function is called, noting that a trap is set as he ENTERS a city
-Trap setTrap(Round roundNo, Trap traps[TRAIL_SIZE])
-{
-  int i;
-
-  for(i = 0; i < TRAIL_SIZE; i++)
-  {
-    if(traps[i] == 0)
-    {
-      traps[i].tRound = roundNo;
-      traps[i].tLoc = // curPos[PLAYER_DRACULA];
-      return traps; 
-    }   
-  }
-  return traps;
-}
-
-// Checks if a trap falls off the trail.
-// Should be called at the start of every round.
-Trap updateTraps(Gameview currentView, Trap traps[TRAIL_SIZE])
-{
-  int i;
-
-  for(i = 0; i < TRAIL_SIZE; i++)
-  {
-    if(traps[i].tRound + TRAIL_SIZE <= roundNo)
-    {
-      traps[i].tRound = 0;
-      traps[i].tLoc = -1;
-    }
-  }  
 }
 
 
