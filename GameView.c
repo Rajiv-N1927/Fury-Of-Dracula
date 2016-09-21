@@ -10,6 +10,9 @@
 
 #include "Map.h"
 // #include "Map.h" ... if you decide to use the Map ADT
+
+#define MAX_TRAPS 6
+
 typedef struct player {
   PlayerID playerID;  //Establish an ID for the player
   LocationID curPos;  //The current position of the Player
@@ -24,6 +27,13 @@ struct gameView {
     Round roundNo;
     Map newMap;
 };
+
+typedef struct trap {
+  Round tRound;
+  LocationID tLoc;
+} Trap;
+
+
 //Initialise all the players
 static Player *setPlayers(Player p[NUM_PLAYERS]) {
   int i, j;
@@ -42,6 +52,7 @@ static Player *setPlayers(Player p[NUM_PLAYERS]) {
 static GameView init() {
   GameView gameView = (GameView)malloc(sizeof(struct gameView));
   setPlayers(gameView->player);
+  Trap traps = initTraps();
   gameView->roundNo = 0;
   gameView->turnNo  = 0;
   gameView->score   = GAME_START_SCORE;
@@ -61,6 +72,59 @@ void setTrail(GameView currentView, PlayerID pID, LocationID locID) {
     currentView->player[pID].trail[i] = refTrail[i];
   }
 }
+
+// Initalises the array of traps a
+Trap initTraps(void)
+{
+  int i;
+
+  // Not sure if this is necessary
+  Trap traps[TRAIL_SIZE] = malloc(TRAIL_SIZE*sizeof(struct trap));
+
+  for(i = 0; i < TRAIL_SIZE; i++)
+  {
+    traps[i].tRound = 0;
+    traps[i].tLoc = -1;
+  }
+  return traps;
+}
+
+// Sets a trap - stores location and round when set
+// then adds the new trap to traps[]
+// This functions assumes that Dracula's position is updated before
+// this function is called, noting that a trap is set as he ENTERS a city
+Trap setTrap(Gameview currentView, Trap traps[TRAIL_SIZE])
+{
+  int i;
+
+  for(i = 0; i < TRAIL_SIZE; i++)
+  {
+    if(traps[i] == 0)
+    {
+      traps[i].tRound = currentView->roundNo;
+      traps[i].tLoc = currentView->player[PLAYER_DRACULA].curPos;
+      return traps; 
+    }   
+  }
+  return traps;
+}
+
+// Checks if a trap falls off the trail.
+// Should be called at the start of every round.
+Trap updateTraps(Gameview currentView, Trap traps[TRAIL_SIZE])
+{
+  int i;
+
+  for(i = 0; i < TRAIL_SIZE; i++)
+  {
+    if(traps[i].tRound + TRAIL_SIZE <= roundNo)
+    {
+      traps[i].tRound = 0;
+      traps[i].tLoc = -1;
+    }
+  }  
+}
+
 //Converts the player char to ID
 PlayerID charToPlayerID(char p) {
   PlayerID thePlayer;
