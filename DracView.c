@@ -76,7 +76,7 @@ void setEnc(DracView currentView, Trap encs[TRAIL_SIZE])
     {
       currentView->encs[i].tRound = giveMeTheRound(currentView);
       currentView->encs[i].tLoc = // curPos[PLAYER_DRACULA];
-    }
+    } 
   }
 }
 
