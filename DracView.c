@@ -313,8 +313,8 @@ void whatsThere(DracView currentView, LocationID where,
         if ( currentView->encs[i].type == SET_TRAP ) traps++;
       }
     }
-    *numTraps = vamps;
-    *numVamps = traps;
+    *numTraps = traps;
+    *numVamps = vamps;
 }
 
 //// Functions that return information about the history of the game
