@@ -137,7 +137,6 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 
         if (currentPlayer == PLAYER_DRACULA) {
                 actionLoop = 0;
-                actionIndex += 2;
                 while (actionLoop < 2) { // placement phase i.e. if trap or vamp was placed
                     if (pastPlays[actionIndex] == 'V') { // vamp placed
                       setEnc(currentView, currentView->encs, IMM_VAMP, turnLocID);
