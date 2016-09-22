@@ -105,7 +105,6 @@ void showMap(Map g)
       }
    }
 }
-
 // Return count of nodes
 int numV(Map g)
 {
