@@ -1,6 +1,7 @@
 // DracView.c ... DracView ADT implementation
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include "Globals.h"
 #include "Game.h"
@@ -119,6 +120,8 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
     // THE BELOW WAS TAKEN FROM GAMEVIEW AND HAS TO BE TWEAKED FOR DRACVIEW
     //I guess these loops can just be put in dracview
     int turnIndex = 0;
+    int turnNo = 1; 
+    int roundNo = 0; 
     int actionIndex = 0;
     int actionLoop = 0;
     // int gameStatus = GAME_IN_PROGRESS;
@@ -131,7 +134,7 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 
       }
 
-      updateEncs(currentView, currentView->encs);
+
 
       PlayerID currentPlayer;
 
@@ -212,7 +215,28 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 
         }
 
+   
+
+    if (turnNo%5 == 0) { // end of draculas turn and therefore end of that round 
+
+        roundNo++;
+        updateEncs(currentView, currentView->encs);
+
+    }
+
+
+
       turnIndex += TURN_SIZE;
+      turnNo++; 
+
+    }
+
+    int testLoop = 1; 
+
+    while (testLoop <= TRAIL_SIZE) { 
+
+      printf("Location of trap %d is %d and type is %d\n", testLoop, currentView->encs[testLoop].tLoc, currentView->encs[testLoop].type);
+      testLoop++;
 
     }
 
