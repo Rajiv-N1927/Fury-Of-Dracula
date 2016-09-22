@@ -316,9 +316,9 @@ int main()
     disposeGameView(gv);
     
     printf("Testing - Game score after 2 rounds\n");
-    PlayerMessage messages19[] = {"idk what to put"};
+    PlayerMessage messages22[] = {"idk what to put"};
     gv = newGameView("GST.... SMI.... HMI.... MAO.... DC?T..."
-                     "GST.... SMI.... HGE.... MAO.... DC?T...", messages19);
+                     "GST.... SMI.... HGE.... MAO.... DC?T...", messages22);
     assert(getRound(gv) == 2);
     assert(getHealth(gv,PLAYER_DR_SEWARD) == GAME_START_HUNTER_LIFE_POINTS);
     assert(getHealth(gv,PLAYER_DRACULA) == GAME_START_BLOOD_POINTS);
@@ -339,11 +339,10 @@ int main()
     PlayerMessage messages21[] = {"rip"};
     gv = newGameView("GST.... SMI.... HMI.... MAO.... DD3T..."
                      "GGETTTD ", messages21);
-    assert(getRound(gv) == 9)
-    assert(getHealth(gv,PLAYER_DR_SEWARD) == GAME_START_HUNTER_LIFE_POINTS - 9);
+    
     assert(getHealth(gv,PLAYER_LORD_GODALMING) == 0);
     assert(getHealth(gv,PLAYER_DRACULA) == GAME_START_BLOOD_POINTS - 10);
-    assert(getLocation(gv, PLAYER_LORD_GODALMING) == JM);
+    //assert(getLocation(gv, PLAYER_LORD_GODALMING) == JM);
     assert(getScore(gv) == GAME_START_SCORE - 8 - 6);       //8 cause drac hasnt finished his current turn yet (so only 8 turns)
     printf("passed\n");
     disposeGameView(gv);
