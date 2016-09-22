@@ -380,7 +380,8 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
         }
 
         turnIndex += TURN_SIZE; 
-        gameView->turnNo++; 
+        gameView->turnNo++;  
+        // printf("turn no [%d] previous char [%d]\n", gameView->turnNo, currentPlayer);
 
     }
 
@@ -413,7 +414,9 @@ Round getRound(GameView currentView)
 // Get the id of current player - ie whose turn is it?
 PlayerID getCurrentPlayer(GameView currentView)
 {
+   // printf("currentView->turnNo is %d\n", currentView->turnNo);
    return currentView->player[((currentView->turnNo%5)-1)].playerID;
+
 }
 
 // Get the current score
@@ -460,18 +463,22 @@ void connectedRail(Map g, LocationID lID, LocationID *locs,
   int *index, int maxDist)
   {
   VList start;
+  //printf("CHECKING: %s\n", idToName(lID));
   if ( maxDist == 0 || *index == maxDist ) return;
   for (start = g->connections[lID]; start != NULL; start = start->next ) {
     if ( *index < maxDist ) {
       if ( start->type == RAIL ) {
         printf("%s\n", idToName(start->v));
         if ( CheckUniqueLoc( locs, start->v ) ) {
+          //printf("IndexCRRA %d: %s\n", *index, idToName(start->v));
           locs[*index+=1] = start->v;
           connectedRail(g, start->v, locs, index, maxDist);
         }
       }
     }
   }
+  //printf("-------------------\n");
+  //printf("%d\n", index);
 }
 LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player, Round round,
@@ -485,19 +492,24 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
   for (; start != NULL; start = start->next) {
     if ( sea == 1 && start->type == BOAT ) {
       if ( CheckUniqueLoc(arr, start->v) ) {
+        //printf("IndexCRB %d: %s\n", *index, idToName(start->v));
         arr[*index+=1] = start->v;
       }
     } if ( player != PLAYER_DRACULA && rail == 1 && start->type == RAIL ) {
+        //printf("Curr index: %d maxDist %d\n", *index, (round+player)%4 + *index);
         connectedRail(currentView->newMap, from, arr, index, (round+player)%4 + *index);
+        //rail = 0;
     } if ( road == 1 && start->type == ROAD ) {
       if ( CheckUniqueLoc(arr, start->v) ) {
+        //printf("IndexCRRO %d: %s\n", *index, idToName(start->v));
         arr[*index+=1] = start->v;
       }
     }
   }
-
+  //printf("index: %d\n", *index);
   arr[*index+=1] = -1;
   *numLocations = test;
   return arr;
 }
+
 
