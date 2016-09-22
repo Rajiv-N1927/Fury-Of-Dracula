@@ -15,6 +15,84 @@ static void addConnections(Map);
 // LocationID *connectedRail(Map g, LocationID s);
 // Create a new empty graph (for a map)
 // #Vertices always same as NUM_PLACES
+// int CheckUniqueLoc ( LocationID *arr, LocationID lID ) {
+//   int i;
+//   for ( i = 0; arr[i] != '\0'; i++ ) {
+//     if ( arr[i] == lID ) return FALSE;
+//   }
+//   return TRUE;
+// }
+// void connectedRail(Map g, LocationID lID, LocationID *locs,
+//   int *index, int maxDist)
+//   {
+//   VList start;
+//   printf("CHECKING: %s\n", idToName(lID));
+//   if ( maxDist == 0 || *index == maxDist ) return;
+//   for (start = g->connections[lID]; start != NULL; start = start->next ) {
+//     if ( *index < maxDist ) {
+//       if ( start->type == RAIL ) {
+//         printf("%s\n", idToName(start->v));
+//         if ( CheckUniqueLoc( locs, start->v ) ) {
+//           printf("IndexCRRA %d: %s\n", *index, idToName(start->v));
+//           locs[*index+=1] = start->v;
+//           connectedRail(g, start->v, locs, index, maxDist);
+//         }
+//       }
+//     }
+//   }
+//   printf("-------------------\n");
+//   //printf("%d\n", index);
+// }
+// LocationID *connectedFull(Map g, LocationID lID, int *numLocations,
+//   PlayerID player, Round round, int road, int rail, int sea)
+// {
+//   LocationID *arr = malloc(sizeof(LocationID)*NUM_MAP_LOCATIONS);
+//   int test = 0;
+//   int *index = &test;
+//   arr[*index] = lID;
+//   VList start = g->connections[lID];
+//   for (; start != NULL; start = start->next) {
+//     if ( sea == 1 && start->type == BOAT ) {
+//       if ( CheckUniqueLoc(arr, start->v) ) {
+//         //printf("IndexCRB %d: %s\n", *index, idToName(start->v));
+//         arr[*index+=1] = start->v;
+//       }
+//     } if ( player != PLAYER_DRACULA && rail == 1 && start->type == RAIL ) {
+//         //printf("Curr index: %d maxDist %d\n", *index, (round+player)%4 + *index);
+//         connectedRail(g, lID, arr, index, (round+player)%4 + *index);
+//         //rail = 0;
+//     } if ( road == 1 && start->type == ROAD ) {
+//       if ( CheckUniqueLoc(arr, start->v) ) {
+//         //printf("IndexCRRO %d: %s\n", *index, idToName(start->v));
+//         arr[*index+=1] = start->v;
+//       }
+//     }
+//   }
+//   //printf("index: %d\n", *index);
+//   arr[*index+=1] = -1;
+//   *numLocations = test;
+//   return arr;
+// }
+// int main( int argc, char* argv[] ) {
+//   Map g = newMap();
+//   //Just Rail
+//   int tst = 0;
+//   int *index = &tst;
+//   LocationID *test = malloc(sizeof(LocationID)*NUM_MAP_LOCATIONS);
+//   Round round = 0;
+//   int size;
+//   //connectedRail(g, BUCHAREST, test, index, 3);
+//   LocationID *rails = connectedFull(g, IONIAN_SEA, &size, PLAYER_LORD_GODALMING,
+//     round, 0, 0, 1);
+//   printf("size: %d\n", size);
+//   for ( int i = 0; rails[i] != -1; i++ ) {
+//     printf("PLS: %s\n", idToName(rails[i]));
+//   }
+//   free(rails);
+//
+//   return 0;
+// }
+
 Map newMap()
 {
    int i;
