@@ -13,6 +13,13 @@
 #define SET_TRAP 1
 #define NOSET    2
 
+#define TURN_SIZE 8
+
+#define GAME_IN_PROGRESS 0
+#define HUNTER_WIN 1
+#define DRACULA_WIN -1
+#define DRAW 100
+
 typedef struct encounter {
   int type;
   LocationID tLoc;      // DOES THIS BELONG IN GAMEVIEW?
@@ -30,6 +37,9 @@ void initEncounters(Encounter encs[TRAIL_SIZE]);
 void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type);
 int CheckUniqueLoc ( LocationID *arr, LocationID lID );
 void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE]);
+void rmTrpNVmp(DracView currentView, PlayerID player, Encounter encs[TRAIL_SIZE]);
+void rmMature(DracView currentView);
+int isUniqueLoc ( LocationID *arr, LocationID lID );
 
 //// Trap functions
 
@@ -43,7 +53,26 @@ void initEncounters(Encounter encs[TRAIL_SIZE])
     encs[i].tLoc = -1;
   }
 }
-
+// Remove a trap due to a player stepping on it or killing imm vamp
+void rmTrpNVmp(DracView currentView, PlayerID player, Encounter encs[TRAIL_SIZE]) {
+  int i;
+  for ( i = 0; i < TRAIL_SIZE; i++ ) {
+    if ( (whereIs(currentView, player) == currentView->encs[i].tLoc) ) {
+      if ( currentView->encs[i].type == SET_TRAP )
+        currentView->encs[i].type = NOSET;
+      if ( currentView->encs[i].type == IMM_VAMP )
+        currentView->encs[i].type = NOSET;
+    }
+  }
+}
+void rmMature(DracView currentView) {
+  int i;
+  for ( i = 0; i < TRAIL_SIZE; i++ ) {
+    if ( currentView->encs[i].type == IMM_VAMP ) {
+      currentView->encs[i].type = NOSET;
+    }
+  }
+}
 // Sets a trap/vampire - stores location and round when set
 // then adds the new encounter to traps[]/vamps[]
 // This functions assumes that Dracula's position is updated before
@@ -60,16 +89,14 @@ void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type)
 void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE])
 {
   int i;
-
-  for(i = 0; i < TRAIL_SIZE - 1; i++)
-  {
-    currentView->encs[i+1] = currentView->encs[i];
-    // if(currentView->encs[i].tRound + TRAIL_SIZE <= giveMeTheRound(currentView))
-    // {
-    //   currentView->encs[i].type = NOSET;
-    //   currentView->encs[i].tRound = 0;
-    //   currentView->encs[i].tLoc = -1;
-    // }
+  Encounter refTrail[TRAIL_SIZE];
+  for ( i = 0; i < 5; i++ ) {
+    refTrail[i+1] = currentView->encs[i];
+  }
+  refTrail[0].type = NOSET;
+  refTrail[0].tLoc = -1;
+  for ( i = 0; i < TRAIL_SIZE; i++ ) {
+    currentView->encs[i] = refTrail[i];
   }
 }
 
@@ -78,41 +105,29 @@ void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE])
 DracView newDracView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    DracView dracView = malloc(sizeof(struct dracView));
-    initEncounters(dracView->encs);
+    DracView currentView = malloc(sizeof(struct dracView));
+    currentView->newGV = newGameView(pastPlays, messages);
+    initEncounters(currentView->encs);
 
     // THE BELOW WAS TAKEN FROM GAMEVIEW AND HAS TO BE TWEAKED FOR DRACVIEW
-     /* I guess these loops can just be put in dracview
+    //I guess these loops can just be put in dracview
+    int turnIndex = 0;
+    int actionIndex = 0;
+    int actionLoop = 0;
+    int gameStatus = GAME_IN_PROGRESS;
 
-        if (currentPlayer == PLAYER_DRACULA) {
-
+    while ( pastPlays[turnIndex] != ' ' && GAME_IN_PROGRESS)
+        if (getCurrentPlayer(currentView->newGV) == PLAYER_DRACULA) {
+                actionLoop = 0;
+                actionIndex = turnIndex + 3;
                 while (actionLoop < 2) { // placement phase i.e. if trap or vamp was placed
-
                     if (pastPlays[actionIndex] == 'V') { // vamp placed
-
-                       // updateVampire(turnAbbrevLocation, roundNo, actionInt)
-                            // need to place an immature vampire here
-                            // should be something laong the lines of...
-                            // updateVampire(turnAbbrevLocation, roundNo, actionVariable)
-                            // action variable can be defined to be the placing or vanquishing or maturing of a vampire
-                            // we could DEFINE VAMPIRE_PLACE, VAMPIRE_VANQUISH & VAMPIRE_MATURE to determine that
-
+                      setEnc(currentView, currentView->encs, IMM_VAMP);
+                    } if (pastPlays[actionIndex] == 'T') { // trap placed
+                      setEnc(currentView, currentView->encs, SET_TRAP);
                     }
-
-
-                    if (pastPlays[actionIndex] == 'T') { // trap placed
-
-                        // updateTraps(turnAbbrevLocation, roundNo, actionInt)
-                                                        // something like...
-                            // updateTraps(turnAbbrevLocation, roundNo, actionInt) // actionInt will tell if added or disarmed
-                            // in this case an actionInt of 1 could mean adding a trap here
-                            // we could DEFINE TRAP_ADD & TRAP_DISARM & TRAP_VANISH to determine that
-
-                    }
-
                     actionIndex++;
                     actionLoop++;
-
                 }
 
                 actionLoop = 0; // resetting for his 'action' phase
@@ -120,42 +135,37 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
                while (actionLoop < 2 && gameStatus == GAME_IN_PROGRESS) { // loops through actions and accounts for effects (only 4 actions per string)
 
                     if (pastPlays[actionIndex] == 'V') { // vamp matured
-
-                        // updateVampire(turnAbbrevLocation, roundNo, actionInt)
-                            // action int should signify the maturing of a vampire
-                            // input location here should not matter
-                            // based on the round No input, the function should search for the respective vampire and remove it from the array
-                        gameView->score -= SCORE_LOSS_VAMPIRE_MATURES;
-
-
+                      rmMature(currentView);
+                      //gameView->score -= SCORE_LOSS_VAMPIRE_MATURES;
                     }
 
-
                     if (pastPlays[actionIndex] == 'T') { // trap vanished
-
-                        // updateTraps(turnAbbrevLocation, roundNo, actionInt)
-                            // input location here should not matter
-                            // based on the action int, the function should knwo to merely search its array and remove any outdated traps
-
+                      updateEncs(currentView, currentView->encs);
                     }
 
                     actionIndex++;
                     actionLoop++;
-
-
-                    if (gameView->score <= 0) {
-
-                        gameStatus = DRACULA_WIN;
-
-                    }
-
               }
+        } else {
+          actionLoop = 0;
+          actionIndex = turnIndex + 3;
+          while (actionLoop < 2) { // placement phase i.e. if trap or vamp was placed
+              if (pastPlays[actionIndex] == 'V') { // vamp placed
+                rmTrpNVmp(currentView, getCurrentPlayer(currentView->newGV),
+                  currentView->encs);
+              } if (pastPlays[actionIndex] == 'T') { // trap placed
+                rmTrpNVmp(currentView, getCurrentPlayer(currentView->newGV),
+                  currentView->encs);
+              }
+              actionIndex++;
+              actionLoop++;
+          }
 
+          turnIndex += TURN_SIZE;
 
+        }
 
-        } */
-
-    return dracView;
+    return currentView;
 }
 
 
@@ -238,7 +248,7 @@ void giveMeTheTrail(DracView currentView, PlayerID player,
   getHistory(currentView->newGV, player, trail);
 }
 
-int CheckUniqueLoc ( LocationID *arr, LocationID lID ) {
+int isUniqueLoc ( LocationID *arr, LocationID lID ) {
   int i;
   for ( i = 0; arr[i] != '\0'; i++ ) {
     if ( arr[i] == lID ) return FALSE;
@@ -269,7 +279,7 @@ LocationID *whereCanIgo(DracView currentView, int *numLocations, int road, int s
   }
   for (i = 0; toCheck[i] != -1; i++ ) {
     if ( HD && DB ) {
-      if ( CheckUniqueLoc(trailcheck, toCheck[i])
+      if ( isUniqueLoc(trailcheck, toCheck[i])
         && toCheck[i] != ST_JOSEPH_AND_ST_MARYS ) {
         ret[index] = toCheck[i];
         index++;

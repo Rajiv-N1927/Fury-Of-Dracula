@@ -11,7 +11,6 @@
 
 struct hunterView {
     GameView newGV;
-
 };
 
 
@@ -20,11 +19,7 @@ HunterView newHunterView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     HunterView hunterView = malloc(sizeof(struct hunterView));
-    
-    /*
-        GAMEVIEW STYLE PARSE???
-    */
-
+    hunterView->newGV = newGameView(pastPlays, messages);
     return hunterView;
 }
 
@@ -43,28 +38,24 @@ void disposeHunterView(HunterView toBeDeleted)
 // Get the current round
 Round giveMeTheRound(HunterView currentView)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     return getRound(currentView->newGV);
 }
 
 // Get the id of current player
 PlayerID whoAmI(HunterView currentView)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     return getCurrentPlayer(currentView->newGV);
 }
 
 // Get the current score
 int giveMeTheScore(HunterView currentView)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     return getScore(currentView->newGV);
 }
 
 // Get the current health points for a given player
 int howHealthyIs(HunterView currentView, PlayerID player)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     return getHealth(currentView->newGV, player);
 }
 
@@ -81,7 +72,7 @@ LocationID whereIs(HunterView currentView, PlayerID player)
 void giveMeTheTrail(HunterView currentView, PlayerID player,
                             LocationID trail[TRAIL_SIZE])
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+    getHistory(currentView->newGV, player, trail);
 }
 
 //Helper function for whereCanIgo (just a base)
@@ -98,17 +89,21 @@ void giveMeTheTrail(HunterView currentView, PlayerID player,
 //// Functions that query the map to find information about connectivity
 
 // What are my possible next moves (locations)
-//THIS IS NOT CORRECT ITS JUST DIRECT CONNECTIONS LIKE THE PREV TUTORIAL
 LocationID *whereCanIgo(HunterView currentView, int *numLocations,
                         int road, int rail, int sea)
 {
-  return NULL;
+  PlayerID whome = whoAmI(currentView);
+  return connectedLocations(currentView->newGV, numLocations,
+    whereIs(currentView, whome), whome, giveMeTheRound(currentView),
+      road, rail, sea);
 }
 
 // What are the specified player's next possible moves
 LocationID *whereCanTheyGo(HunterView currentView, int *numLocations,
                            PlayerID player, int road, int rail, int sea)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return NULL;
+  PlayerID whome = whoAmI(currentView);
+  return connectedLocations(currentView->newGV, numLocations,
+    whereIs(currentView, whome), whome, giveMeTheRound(currentView),
+      road, rail, sea);
 }
