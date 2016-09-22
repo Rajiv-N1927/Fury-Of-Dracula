@@ -126,21 +126,16 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
     while (turnIndex < strlen(pastPlays) && gameStatus == GAME_IN_PROGRESS) { // can alternatively have condition while turnIndex < strlen(pastPlays) && gamestatus...
 
         PlayerID currentPlayer = charToPlayerID(pastPlays[turnIndex]);
-         printf(" start of new turn, turnno = %d \n", gameView->turnNo); 
-        if (currentPlayer == PLAYER_DRACULA) {
 
-         printf(" drac turn count \n"); 
+        if (currentPlayer == PLAYER_DRACULA) {
 
             gameView->score -= SCORE_LOSS_DRACULA_TURN;
 
         } else if (gameView->player[currentPlayer].health <= 0) { // else if hunter who died last round - need to restore hp 
 
-            printf("flag\n"); 
             gameView->player[currentPlayer].health = GAME_START_HUNTER_LIFE_POINTS; 
 
         }
-
-      printf("post location id flag\n"); 
 
         actionIndex = turnIndex + 1; // first location char
 
@@ -148,13 +143,9 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
 
         LocationID turnLocID; 
 
-        printf("flag 311\n"); 
-
-
         if (!strcmp(turnAbbrevLocation, "C?")) { 
 
             turnLocID = CITY_UNKNOWN; 
-            //printf("flag C????\n"); 
 
         }
 
@@ -178,7 +169,6 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
 
         else if (!strcmp(turnAbbrevLocation, "D2")) { 
 
-            //printf("flag 31\n"); 
 
             turnLocID = DOUBLE_BACK_2; 
 
@@ -214,14 +204,9 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
 
         } 
 
-        // printf("turnLocID is based on %s and is %d\n", turnAbbrevLocation, turnLocID);
-        
-
-        // void setTrail(GameView currentView, PlayerID pID, LocationID locID) 
-        // printf("Player is at %d\n", gameView->player[currentPlayer].trail[0]);
         setTrail(gameView, currentPlayer, turnLocID); // updating trail for current player 
         gameView->player[currentPlayer].curPos = turnLocID; 
-        // turnLocID = gameView->player[currentPlayer].curPos; 
+
 
         if (currentPlayer == PLAYER_LORD_GODALMING  || // determining if character rested
             currentPlayer == PLAYER_DR_SEWARD       || 
@@ -240,37 +225,7 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
                         }
 
                     }
-
-                    // DO WE NEED TO DO THIS ? VVVVV 
-                    // This may be for HunterView 
-
-                    /* if (gameView->player[currentPlayer].trail[0] == 'ANY CITY IN DRACULAS TRAIL') { 
-
-                        // all moves that resulted in dracula being in that city 
-                        // have their trail indexes revealed to the hunters 
-
-                    } 
-
-                    switch(gameView->player[currentPlayer].trail[0]) { 
-
-                        case gameView->player[PLAYER_DRACULA].trail[0] : 
-                        case gameView->player[PLAYER_DRACULA].trail[1] :
-                        case gameView->player[PLAYER_DRACULA].trail[2] :
-                        case gameView->player[PLAYER_DRACULA].trail[3] :
-                        case gameView->player[PLAYER_DRACULA].trail[4] :
-                        case gameView->player[PLAYER_DRACULA].trail[5] :
-
-                            // all moves that resulted in dracula being in that city 
-                            // have their trail indexes revealed to the hunters
-
-                            break; 
-
-                        default : 
-
-                            break; 
-
-                    } */ 
-
+               
         } 
 
         if (currentPlayer == PLAYER_DRACULA) {
@@ -286,13 +241,11 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             else if (turnLocID == CITY_UNKNOWN) { 
 
                // good on dracula, he's ok 
-               //printf("flag 5\n"); 
 
             }
 
             else if (turnLocID >= MIN_MAP_LOCATION && turnLocID <= MAX_MAP_LOCATION) {
 
-               //printf("flag 6\n"); 
                if (!isLand(gameView->player[currentPlayer].curPos))  { // dracula is at sea and therefore loses 2 hp 
 
                    gameView->player[PLAYER_DRACULA].health -= LIFE_LOSS_SEA;
@@ -302,7 +255,6 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
             } else if (turnLocID >= 102 && turnLocID <= 108) { 
 
                LocationID dbID; 
-//printf("flag 3\n"); 
 
                   switch (turnLocID) { 
 
@@ -428,13 +380,9 @@ GameView newGameView(char *pastPlays, PlayerMessage messages[]) {
         }
 
         turnIndex += TURN_SIZE; 
-        gameView->turnNo++;  
-        printf(" character id is %d\n", currentPlayer); 
-        // printf("turn no [%d] previous char [%d]\n", gameView->turnNo, currentPlayer);
+        gameView->turnNo++; 
 
     }
-
-    printf("endloopflag\n"); 
 
     return gameView;
 
@@ -465,9 +413,7 @@ Round getRound(GameView currentView)
 // Get the id of current player - ie whose turn is it?
 PlayerID getCurrentPlayer(GameView currentView)
 {
-   // printf("currentView->turnNo is %d\n", currentView->turnNo);
    return currentView->player[((currentView->turnNo%5)-1)].playerID;
-
 }
 
 // Get the current score
@@ -514,22 +460,18 @@ void connectedRail(Map g, LocationID lID, LocationID *locs,
   int *index, int maxDist)
   {
   VList start;
-  //printf("CHECKING: %s\n", idToName(lID));
   if ( maxDist == 0 || *index == maxDist ) return;
   for (start = g->connections[lID]; start != NULL; start = start->next ) {
     if ( *index < maxDist ) {
       if ( start->type == RAIL ) {
         printf("%s\n", idToName(start->v));
         if ( CheckUniqueLoc( locs, start->v ) ) {
-          //printf("IndexCRRA %d: %s\n", *index, idToName(start->v));
           locs[*index+=1] = start->v;
           connectedRail(g, start->v, locs, index, maxDist);
         }
       }
     }
   }
-  //printf("-------------------\n");
-  //printf("%d\n", index);
 }
 LocationID *connectedLocations(GameView currentView, int *numLocations,
                                LocationID from, PlayerID player, Round round,
@@ -543,22 +485,19 @@ LocationID *connectedLocations(GameView currentView, int *numLocations,
   for (; start != NULL; start = start->next) {
     if ( sea == 1 && start->type == BOAT ) {
       if ( CheckUniqueLoc(arr, start->v) ) {
-        //printf("IndexCRB %d: %s\n", *index, idToName(start->v));
         arr[*index+=1] = start->v;
       }
     } if ( player != PLAYER_DRACULA && rail == 1 && start->type == RAIL ) {
-        //printf("Curr index: %d maxDist %d\n", *index, (round+player)%4 + *index);
         connectedRail(currentView->newMap, from, arr, index, (round+player)%4 + *index);
-        //rail = 0;
     } if ( road == 1 && start->type == ROAD ) {
       if ( CheckUniqueLoc(arr, start->v) ) {
-        //printf("IndexCRRO %d: %s\n", *index, idToName(start->v));
         arr[*index+=1] = start->v;
       }
     }
   }
-  //printf("index: %d\n", *index);
+
   arr[*index+=1] = -1;
   *numLocations = test;
   return arr;
 }
+
