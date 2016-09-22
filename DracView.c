@@ -39,7 +39,7 @@ void initEncounters(Encounter encs[TRAIL_SIZE]);
 void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type);
 int CheckUniqueLoc ( LocationID *arr, LocationID lID );
 void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE]);
-void rmTrpNVmp(DracView currentView, PlayerID player, Encounter encs[TRAIL_SIZE]);
+void rmTrpNVmp(DracView currentView, PlayerID player, Encounter encs[TRAIL_SIZE], Location ID curLoc);
 void rmMature(DracView currentView);
 int isUniqueLoc ( LocationID *arr, LocationID lID );
 
@@ -62,9 +62,11 @@ void rmTrpNVmp(DracView currentView, PlayerID player, Encounter encs[TRAIL_SIZE]
       if ( curLoc == currentView->encs[i].tLoc) ) {
         if ( currentView->encs[i].type == SET_TRAP && trapsHit <= 3 )
           currentView->encs[i].type = NOSET;
+          currentView->encs[i].tLoc = UNKNOWN_LOCATION; 
           trapsHit++;
         if ( currentView->encs[i].type == IMM_VAMP )
           currentView->encs[i].type = NOSET;
+          currentView->encs[i].tLoc = UNKNOWN_LOCATION; 
      }
     }
 }
@@ -73,6 +75,7 @@ void rmMature(DracView currentView) {
   for ( i = 0; i < TRAIL_SIZE; i++ ) {
     if ( currentView->encs[i].type == IMM_VAMP ) {
       currentView->encs[i].type = NOSET;
+      currentView->encs[i].tLoc = UNKNOWN_LOCATION; 
     }
   }
 }
@@ -89,7 +92,7 @@ void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type, Location
 
 // Checks if a trap falls off the trail/vampire matures.
 // Should be called at the start of every round.
-void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE])
+void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE], LocationID curLoc)
 {
   int i;
   Encounter refTrail[TRAIL_SIZE];
@@ -97,7 +100,7 @@ void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE])
     refTrail[i+1] = currentView->encs[i];
   }
   refTrail[0].type = NOSET;
-  refTrail[0].tLoc = -1;
+  refTrail[0].tLoc = UNKNOWN_LOCATION;
   for ( i = 0; i < TRAIL_SIZE; i++ ) {
     currentView->encs[i] = refTrail[i];
   }
@@ -121,7 +124,21 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 
     while (turnIndex < strlen(pastPlays)) {
 
-        PlayerID currentPlayer = charToPlayerID(pastPlays[turnIndex]);
+    updateEncs(currentView, currentView->encs);
+
+        PlayerID currentPlayer;
+        switch(pastPlays[turnIndex]) {
+          case 'G': currentPlayer = PLAYER_LORD_GODALMING;
+            break;
+          case 'S': currentPlayer = PLAYER_DR_SEWARD;
+            break;
+          case 'H': currentPlayer = PLAYER_VAN_HELSING;
+            break;
+          case 'M': currentPlayer = PLAYER_MINA_HARKER;
+            break;
+          case 'D': currentPlayer = PLAYER_DRACULA;
+            break;
+        }
 
         actionIndex = turnIndex + 1; // first location char
 
@@ -138,13 +155,18 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
         if (currentPlayer == PLAYER_DRACULA) {
                 actionLoop = 0;
                 while (actionLoop < 2) { // placement phase i.e. if trap or vamp was placed
+
                     if (pastPlays[actionIndex] == 'V') { // vamp placed
                       setEnc(currentView, currentView->encs, IMM_VAMP, turnLocID);
-                    } if (pastPlays[actionIndex] == 'T') { // trap placed
+                    }
+
+                    if (pastPlays[actionIndex] == 'T') { // trap placed
                       setEnc(currentView, currentView->encs, SET_TRAP, turnLocID);
                     }
+
                     actionIndex++;
                     actionLoop++;
+
                 }
 
                 actionLoop = 0; // resetting for his 'action' phase
@@ -157,7 +179,8 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
                     }
 
                     if (pastPlays[actionIndex] == 'T') { // trap vanished
-                      updateEncs(currentView, currentView->encs);
+                      rmTrpNVmp(currentView, gcurrentPlayer,
+                        currentView->encs, turnLocID);
                     }
 
                     actionIndex++;
@@ -183,6 +206,8 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
       turnIndex += TURN_SIZE;
 
     }
+
+    updateEncs(currentView, currentView->encs);
 
     return currentView;
 
