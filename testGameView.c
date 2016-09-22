@@ -1,4 +1,4 @@
-// testGameView.c ... test the GameView ADT    took so long omg
+// testGameView.c ... test the GameView ADT
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -151,9 +151,9 @@ int main()
     disposeGameView(gv);
 
     printf("Test for Dracula hiding in the city + placing an immature vampire when he hides (Drac View)\n");
-    PlayerMessage messages8[] = {"Hello","Rubbish","Stuff","","Mwahahah","Aha!","","","","Back I go"};
+    PlayerMessage messages19[] = {"Hello","Rubbish","Stuff","","Mwahahah","Aha!","","","","Back I go"};
     gv = newGameView("GGE.... SGE.... HGE.... MGE.... DHAT... "
-                     "GST.... SMI.... HST.... MST.... DHIV...", messages8);
+                     "GST.... SMI.... HST.... MST.... DHIV...", messages19);
     assert(getLocation(gv,PLAYER_DRACULA) == HIDE);
     getHistory(gv,PLAYER_DRACULA,history);
     assert(history[0] == HIDE);
@@ -169,7 +169,7 @@ int main()
     assert(getHealth(gv,PLAYER_DR_SEWARD) == 3);
     assert(getHealth(gv,PLAYER_DRACULA) == 30);
     assert(getLocation(gv,PLAYER_DR_SEWARD) == MILAN);
-    printf("passed\n", );
+    printf("passed\n");
     disposeGameView(gv);
 
     printf("Test for Smiting a vampire with holy stake and van helsing's trial\n");
@@ -178,12 +178,11 @@ int main()
                      "GGE.... SBB.... HNA.... MEC.... DC?T..."
                      "GMI.... SBO.... HPAV...", messages10);
     assert(getLocation(gv,PLAYER_VAN_HELSING) == PARIS);
-    LocationID history[TRAIL_SIZE];
     getHistory(gv,PLAYER_VAN_HELSING,history);
     assert(history[0] == PARIS);
     assert(history[1] == NANTES);
     assert(history[2]==CLERMONT_FERRAND);
-    printf("passed\n", );
+    printf("passed\n");
     disposeGameView(gv);
 
     printf("Test for Dr. Seward encountering 2 traps (Drac view) + Drac's history\n");
@@ -198,13 +197,13 @@ int main()
     assert(history[0] == MUNICH);
     assert(history[1] == HIDE);
     assert(history[2] == MILAN);
-    printf("passed\n", );
+    printf("passed\n");
     disposeGameView(gv);
 
-    prinf("Test for Hunter history for 2 turns with no encounters occuring\n");
-    PlayerMessage messages12[] = {""};
+    printf("Test for Hunter history for 2 turns with no encounters occuring\n");
+    PlayerMessage messages12[] = {"Hello"};
     gv = newGameView("GBS.... SVA.... HJM.... MCD.... DC?T..."
-                     "GCN.... SIO.... HZA.... MKL.... DC?T...", mesages12);
+                     "GCN.... SIO.... HZA.... MKL.... DC?T...", messages12);
     getHistory(gv,PLAYER_LORD_GODALMING,history);
     assert(history[0] == BLACK_SEA);
     assert(history[1] == CONSTANTA);
@@ -235,22 +234,30 @@ int main()
     printf("passed\n");
     disposeGameView(gv);
 
-    prinf("Test for resting twice after hitting a triple trap (Hunter View)\n");
+    printf("Test for resting twice after hitting a triple trap (Hunter View)\n");
     PlayerMessage messages14[] = {"Hello","Rubbish","Stuff","","Mwahahah","Aha!"};
     gv = newGameView("GSTTT.. SVE.... HCD.... MAO.... DC?T..."
                      "GGE.... SFL.... HCD.... MEC.... DC?T..."
                      "GGE.... ", messages14);
     assert(getHealth(gv,PLAYER_LORD_GODALMING) == 9);
-    assert(getLocation(gv,PLAYER_LORD_GODALMING) == GENEVA;
+    assert(getLocation(gv,PLAYER_LORD_GODALMING) == GENEVA);
     getHistory(gv,PLAYER_LORD_GODALMING,history);
     assert(history[0] == GENEVA);
     assert(history[1] == GENEVA);
     assert(history[2] == STRASBOURG);
-    printf("passed\n", );
+    printf("passed\n");
     disposeGameView(gv);
 
-    
-    prinf("Test for hunter's view when getting to a city in dracula trial\n");
+    printf("Test for teleporting to castle dracula on turn 1 to gain 10 blood points\n"); //both sides know he teleported
+    PlayerMessage messages15[] = {""};
+    gv = newGameView("GVI.... SZA.... HNS.... MMU.... DTP....", messages15);
+    assert(getRound(gv) == 1);
+    assert(getHealth(gv, PLAYER_DRACULA) == GAME_START_BLOOD_POINTS + 10);
+    assert(getLocation(gv, PLAYER_DRACULA) == CASTLE_DRACULA);
+    printf("passed\n");
+    disposeGameView(gv);
+
+    printf("Test for hunter's view when getting to a city in dracula trial\n");
     PlayerMessage messages16[] = {"Hello","Rubbish","Stuff","","Mwahahah","Aha!"};
     gv = newGameView("GMI.... SMR.... HMI.... MMR.... DC?T..."
                      "GGE.... SGE.... HGE.... MGE.... DCOT..."
@@ -258,13 +265,13 @@ int main()
                      "GNU.... SNU.... HNU.... MNU.... DC?T..."
                      "GFRT...", messages16);
     assert(getHealth(gv,PLAYER_LORD_GODALMING) == 7);
-    assert(getLocation(gv,PLAYER_LORD_GODALMING) == FRANKFURT;
+    assert(getLocation(gv,PLAYER_LORD_GODALMING) == FRANKFURT);
     getHistory(gv,PLAYER_DRACULA,history);
     assert(history[0] == CITY_UNKNOWN);
     assert(history[1] == FRANKFURT);
     assert(history[2] == COLOGNE);
     assert(history[3] == CITY_UNKNOWN);
-    printf("passed\n", );
+    printf("passed\n");
     disposeGameView(gv);
 
     printf("Test for Lord Godalming encountering 3 traps (Hunter View)\n");
@@ -280,11 +287,11 @@ int main()
     assert(getLocation(gv,PLAYER_LORD_GODALMING) == PARIS);
     getHistory(gv,PLAYER_DRACULA,history);
     assert(history[0] == CITY_UNKNOWN);
-    assert(history[1] == DOUBLE_BACK_3;
-    assert(history[2] == CLERMONT_FERRAND;
-    assert(history[3] == CITY_UNKNOWN;
-    assert(history[4] == HIDE;
-    assert(history[5] == PARIS;
+    assert(history[1] == DOUBLE_BACK_3);
+    assert(history[2] == CLERMONT_FERRAND);
+    assert(history[3] == CITY_UNKNOWN);
+    assert(history[4] == HIDE);
+    assert(history[5] == PARIS);
     assert(getCurrentPlayer(gv) == 0);
     printf("passed\n");
     disposeGameView(gv);
@@ -303,10 +310,10 @@ int main()
     assert(getLocation(gv,PLAYER_VAN_HELSING) == GENEVA);
     assert(getLocation(gv,PLAYER_MINA_HARKER) == ENGLISH_CHANNEL);
     getHistory(gv,PLAYER_DRACULA,history);
-    assert(history[0] == GENEVA);  
+    assert(history[0] == GENEVA);
+
     printf("passed\n");
     disposeGameView(gv);
-
 
 
 
