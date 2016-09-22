@@ -14,7 +14,7 @@
 
 typedef struct trap {
   Round tRound;
-  LocationID tID;
+  LocationID tLoc;
 } Trap;
 
 typedef struct encounter {
@@ -33,16 +33,16 @@ struct dracView {
 };
 // Location and round where/when trap was set
 // To be stored in traps[]
-Encounter initEncounters(void);
-
-Trap setEnc(Round roundNo, Trap encs[TRAIL_SIZE]);
+void initEncounters(Encounter encs[MAX_ENCOUNTER]);
+void initTraps(Trap traps[MAX_TRAPS]);
+void setEnc(DracView currentView, Trap encs[TRAIL_SIZE]);
 int CheckUniqueLoc ( LocationID *arr, LocationID lID );
-Trap updateTraps(Gameview currentView, Trap encs[TRAIL_SIZE]);
+void updateTraps(DracView currentView, Trap encs[TRAIL_SIZE]);
 
 //// Trap functions
 
 // Initalises the array of traps/vampires
-Encounter initEncounters(void)
+void initEncounters(Encounter encs[MAX_ENCOUNTER])
 {
   int i;
   for(i = 0; i < TRAIL_SIZE; i++)
@@ -50,10 +50,9 @@ Encounter initEncounters(void)
     encs[i].tRound = 0;
     encs[i].tLoc = -1;
   }
-  return encs;
 }
 
-Trap initTraps(void)
+void initTraps(Trap traps[MAX_TRAPS])
 {
   int i;
   // Not sure if this is necessary
@@ -62,40 +61,37 @@ Trap initTraps(void)
     traps[i].tRound = 0;
     traps[i].tLoc = -1;
   }
-  return traps;
 }
 
 // Sets a trap/vampire - stores location and round when set
 // then adds the new encounter to traps[]/vamps[]
 // This functions assumes that Dracula's position is updated before
 // this function is called, noting that a trap/vampire is set as he ENTERS a city
-Trap setEnc(Round roundNo, Trap encs[TRAIL_SIZE])
+void setEnc(DracView currentView, Trap encs[TRAIL_SIZE])
 {
   int i;
   for(i = 0; i < TRAIL_SIZE; i++)
   {
-    if(encs[i] == 0)
+    if(currentView->encs[i] == 0)
     {
-      encs[i].tRound = roundNo;
-      encs[i].tLoc = // curPos[PLAYER_DRACULA];
-      return encs;
+      currentView->encs[i].tRound = giveMeTheRound(currentView);
+      currentView->encs[i].tLoc = // curPos[PLAYER_DRACULA];
     }
   }
-  return encs;
 }
 
 // Checks if a trap falls off the trail/vampire matures.
 // Should be called at the start of every round.
-Trap updateTraps(Gameview currentView, Trap encs[TRAIL_SIZE])
+void updateTraps(DracView currentView, Trap traps[TRAIL_SIZE])
 {
   int i;
 
   for(i = 0; i < TRAIL_SIZE; i++)
   {
-    if(encs[i].tRound + TRAIL_SIZE <= roundNo)
+    if(currentView->traps[i].tRound + TRAIL_SIZE <= giveMeTheRound(currentView))
     {
-      encs[i].tRound = 0;
-      encs[i].tLoc = -1;
+      currentView->traps[i].tRound = 0;
+      currentView->traps[i].tLoc = -1;
     }
   }
 }
@@ -106,9 +102,8 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     DracView dracView = malloc(sizeof(struct dracView));
-    dracView->traps = initTraps();
-    dracview->encs = initEncounters();
-    Encounter vamps[TRAIL_SIZE] = initEncounters();
+    initTraps(dracView->traps);
+    initEncounters(dracView->encs);
 
     // THE BELOW WAS TAKEN FROM GAMEVIEW AND HAS TO BE TWEAKED FOR DRACVIEW
      /* I guess these loops can just be put in dracview
@@ -219,7 +214,35 @@ int howHealthyIs(DracView currentView, PlayerID player)
 // Get the current location id of a given player
 LocationID whereIs(DracView currentView, PlayerID player)
 {
-  return getLocation(currentView->newGV, player);
+  LocationID curLoc = getLocation(currentView->newGV, player);
+  if (curLoc >= HIDE && curLoc <= TELEPORT) {
+        LocationID ret[TRAIL_SIZE];
+        getHistory(currentView->newGV, PLAYER_DRACULA, ret);
+        switch (curLoc) {
+            // Hide
+            case HIDE: curLoc = ret[1];
+                break;
+            //DB 1
+            case DOUBLE_BACK_1: curLoc = ret[1];
+                break;
+            //DB 2
+            case DOUBLE_BACK_2: curLoc = ret[2];
+                break;
+            //DB 3
+            case DOUBLE_BACK_3: curLoc = ret[3];
+                break;
+            //DB 4
+            case DOUBLE_BACK_4: curLoc = ret[4];
+                break;
+            //DB 5
+            case DOUBLE_BACK_5: curLoc = ret[5];
+              break;
+            // Tele Castle Dracula
+            case TELEPORT: curLoc = CASTLE_DRACULA;
+              break;
+        }
+    }
+    return curLoc;
 }
 
 // Get the most recent move of a given player
@@ -263,7 +286,7 @@ LocationID *whereCanIgo(DracView currentView, int *numLocations, int road, int s
   LocationID *ret = malloc(sizeof(LocationID)*NUM_MAP_LOCATIONS);
   LocationID trailcheck[TRAIL_SIZE];
   giveMeTheTrail(currentView, PLAYER_DRACULA, trailcheck);
-  Location *toCheck = connectedLocations(currentView->newGV, numLocations,
+  LocationID *toCheck = connectedLocations(currentView->newGV, numLocations,
     currentView->curPos, PLAYER_DRACULA,
       giveMeTheRound(currentView), road, 0, sea);
   int i = 0, index = 0;
