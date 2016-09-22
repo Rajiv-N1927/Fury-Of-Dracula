@@ -7,6 +7,8 @@
 #include "GameView.h"
 #include "DracView.h"
 #include "Map.h"
+#include <string.h>
+
 // #include "Map.h" ... if you decide to use the Map ADT
 
 #define IMM_VAMP 0
@@ -22,7 +24,7 @@
 
 typedef struct encounter {
   int type;
-  LocationID tLoc;      // DOES THIS BELONG IN GAMEVIEW?
+  LocationID tLoc;      
 } Encounter;
 
 
@@ -54,16 +56,17 @@ void initEncounters(Encounter encs[TRAIL_SIZE])
   }
 }
 // Remove a trap due to a player stepping on it or killing imm vamp
-void rmTrpNVmp(DracView currentView, PlayerID player, Encounter encs[TRAIL_SIZE]) {
+void rmTrpNVmp(DracView currentView, PlayerID player, Encounter encs[TRAIL_SIZE], LocationID curLoc) {
   int i;
   for ( i = 0; i < TRAIL_SIZE; i++ ) {
-    if ( (whereIs(currentView, player) == currentView->encs[i].tLoc) ) {
-      if ( currentView->encs[i].type == SET_TRAP )
-        currentView->encs[i].type = NOSET;
-      if ( currentView->encs[i].type == IMM_VAMP )
-        currentView->encs[i].type = NOSET;
+      if ( (whereIs(currentView, player) == currentView->encs[i].tLoc) ) {
+        if ( currentView->encs[i].type == SET_TRAP && trapsHit <= 3 )
+          currentView->encs[i].type = NOSET;
+          trapsHit++;
+        if ( currentView->encs[i].type == IMM_VAMP )
+          currentView->encs[i].type = NOSET;
+     }
     }
-  }
 }
 void rmMature(DracView currentView) {
   int i;
@@ -77,7 +80,7 @@ void rmMature(DracView currentView) {
 // then adds the new encounter to traps[]/vamps[]
 // This functions assumes that Dracula's position is updated before
 // this function is called, noting that a trap/vampire is set as he ENTERS a city
-void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type)
+void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type, LocationID curLoc)
 {
   updateEncs(currentView, encs);
   currentView->encs[0].type = type;
@@ -114,17 +117,32 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
     int turnIndex = 0;
     int actionIndex = 0;
     int actionLoop = 0;
-    int gameStatus = GAME_IN_PROGRESS;
+    // int gameStatus = GAME_IN_PROGRESS;
 
-    while ( pastPlays[turnIndex] != ' ' && GAME_IN_PROGRESS)
-        if (getCurrentPlayer(currentView->newGV) == PLAYER_DRACULA) {
+    while (turnIndex < strlen(pastPlays)) {
+
+        PlayerID currentPlayer = charToPlayerID(pastPlays[turnIndex]);
+
+        actionIndex = turnIndex + 1; // first location char
+
+        char turnAbbrevLocation[3] = {pastPlays[actionIndex], pastPlays[actionIndex+1], '\0'};
+
+        LocationID turnLocID; 
+
+        turnLocID = abbrevToID(turnAbbrevLocation);
+
+        actionIndex += 2; 
+
+        } 
+
+        if (currentPlayer == PLAYER_DRACULA) {
                 actionLoop = 0;
-                actionIndex = turnIndex + 3;
+                actionIndex += 2;
                 while (actionLoop < 2) { // placement phase i.e. if trap or vamp was placed
                     if (pastPlays[actionIndex] == 'V') { // vamp placed
-                      setEnc(currentView, currentView->encs, IMM_VAMP);
+                      setEnc(currentView, currentView->encs, IMM_VAMP, turnLocID);
                     } if (pastPlays[actionIndex] == 'T') { // trap placed
-                      setEnc(currentView, currentView->encs, SET_TRAP);
+                      setEnc(currentView, currentView->encs, SET_TRAP, turnLocID);
                     }
                     actionIndex++;
                     actionLoop++;
@@ -136,7 +154,7 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 
                     if (pastPlays[actionIndex] == 'V') { // vamp matured
                       rmMature(currentView);
-                      //gameView->score -= SCORE_LOSS_VAMPIRE_MATURES;
+                      
                     }
 
                     if (pastPlays[actionIndex] == 'T') { // trap vanished
@@ -146,26 +164,29 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
                     actionIndex++;
                     actionLoop++;
               }
-        } else {
+        } else { // hunters 
           actionLoop = 0;
           actionIndex = turnIndex + 3;
-          while (actionLoop < 2) { // placement phase i.e. if trap or vamp was placed
+          while (actionLoop < 4) { // placement phase i.e. if trap or vamp was placed
               if (pastPlays[actionIndex] == 'V') { // vamp placed
-                rmTrpNVmp(currentView, getCurrentPlayer(currentView->newGV),
-                  currentView->encs);
+                rmTrpNVmp(currentView, currentPlayer,
+                  currentView->encs, turnLocID);
               } if (pastPlays[actionIndex] == 'T') { // trap placed
-                rmTrpNVmp(currentView, getCurrentPlayer(currentView->newGV),
-                  currentView->encs);
+                rmTrpNVmp(currentView, gcurrentPlayer,
+                  currentView->encs, turnLocID);
               }
               actionIndex++;
               actionLoop++;
           }
 
-          turnIndex += TURN_SIZE;
-
         }
 
+      turnIndex += TURN_SIZE;
+
+    }
+
     return currentView;
+
 }
 
 
@@ -232,8 +253,10 @@ void whatsThere(DracView currentView, LocationID where,
     int vamps = 0;
     int i;
     for ( i = 0; i < TRAIL_SIZE; i++ ) {
-      if ( currentView->encs[i].type == IMM_VAMP ) vamps++;
-      if ( currentView->encs[i].type == SET_TRAP ) traps++;
+      if ( currentView->encs[i].tLoc == where) { 
+        if ( currentView->encs[i].type == IMM_VAMP ) vamps++;
+        if ( currentView->encs[i].type == SET_TRAP ) traps++;
+      }
     }
     *numTraps = vamps;
     *numVamps = traps;
