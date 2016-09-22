@@ -314,6 +314,39 @@ int main()
 
     printf("passed\n");
     disposeGameView(gv);
+    
+    printf("Testing - Game score after 2 rounds\n");
+    PlayerMessage messages19[] = {"idk what to put"};
+    gv = newGameView("GST.... SMI.... HMI.... MAO.... DC?T..."
+                     "GST.... SMI.... HGE.... MAO.... DC?T...", messages19);
+    assert(getRound(gv) == 2);
+    assert(getHealth(gv,PLAYER_DR_SEWARD) == GAME_START_HUNTER_LIFE_POINTS);
+    assert(getHealth(gv,PLAYER_DRACULA) == GAME_START_BLOOD_POINTS);
+    assert(getScore(gv) == GAME_START_SCORE - 2);
+    printf("passed\n");
+    disposeGameView(gv);
+
+    printf("Testing - Game score after vampire mature\n");
+    PlayerMessage messages20[] = {"what do i put here lol"};
+    gv = newGameView("GST.... SMI.... HMI.... MAO.... DC?TM.."
+                     "GST.... SMI.... HGE.... MAO.... DC?TMV.", messages20);
+    assert(getRound(gv) == 19);
+    assert(getScore(gv) == GAME_START_SCORE - 19 - 13);
+    printf("passed\n");
+    disposeGameView(gv);
+
+    printf("Testing - Game score after Lord Godalming got incapacitated \n");
+    PlayerMessage messages21[] = {"rip"};
+    gv = newGameView("GST.... SMI.... HMI.... MAO.... DD3T..."
+                     "GGETTTD ", messages21);
+    assert(getRound(gv) == 9)
+    assert(getHealth(gv,PLAYER_DR_SEWARD) == GAME_START_HUNTER_LIFE_POINTS - 9);
+    assert(getHealth(gv,PLAYER_LORD_GODALMING) == 0);
+    assert(getHealth(gv,PLAYER_DRACULA) == GAME_START_BLOOD_POINTS - 10);
+    assert(getLocation(gv, PLAYER_LORD_GODALMING) == JM);
+    assert(getScore(gv) == GAME_START_SCORE - 8 - 6);       //8 cause drac hasnt finished his current turn yet (so only 8 turns)
+    printf("passed\n");
+    disposeGameView(gv);
 
 
 
