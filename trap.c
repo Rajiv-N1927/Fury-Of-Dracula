@@ -1,21 +1,14 @@
-Things for the Trap.
+// Things for the Trap.
 
-#define MAX_TRAPS 3
+#define MAX_TRAPS 3 ?
 
 typedef struct trap {
   Round tRound;
   LocationID tLoc;
-} *Trap;
+} Trap;
 
 //-> add an array of traps in the gameView adt i.e.
 //   Trap traps[MAX_TRAPS + 1];
 //-> create a function for setting traps setTrap()
 //-> Check trap doesn't expire updateTrap()
 //-> Implement the rest of the checks for trap (explicit and implicit)
-
-Trap setTrap(Gameview currentView)
-{
-	Trap newTrap = malloc(sizeof(struct trap));
-	newTrap->tRound = currentView->roundNo;
-	newTrap->tLoc = currentView->player[PLAYER_DRACULA]->curPos;
-}
