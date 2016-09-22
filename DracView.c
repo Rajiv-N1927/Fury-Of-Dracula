@@ -9,16 +9,12 @@
 #include "Map.h"
 // #include "Map.h" ... if you decide to use the Map ADT
 
-#define MAX_TRAPS 3
-#define MAX_ENCOUNTER 6
-
 #define IMM_VAMP 0
 #define SET_TRAP 1
 #define NOSET    2
 
 typedef struct encounter {
   int type;
-  Round tRound;
   LocationID tLoc;      // DOES THIS BELONG IN GAMEVIEW?
 } Encounter;
 
@@ -26,11 +22,11 @@ typedef struct encounter {
 struct dracView {
   //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
   GameView newGV;
-  Encounter encs[MAX_ENCOUNTER];
+  Encounter encs[TRAIL_SIZE];
 };
 // Location and round where/when trap was set
 // To be stored in traps[]
-void initEncounters(Encounter encs[MAX_ENCOUNTER]);
+void initEncounters(Encounter encs[TRAIL_SIZE]);
 void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type);
 int CheckUniqueLoc ( LocationID *arr, LocationID lID );
 void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE]);
@@ -38,13 +34,12 @@ void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE]);
 //// Trap functions
 
 // Initalises the array of traps/vampires
-void initEncounters(Encounter encs[MAX_ENCOUNTER])
+void initEncounters(Encounter encs[TRAIL_SIZE])
 {
   int i;
   for(i = 0; i < TRAIL_SIZE; i++)
   {
     encs[i].type = NOSET;
-    encs[i].tRound = 0;
     encs[i].tLoc = -1;
   }
 }
@@ -55,16 +50,9 @@ void initEncounters(Encounter encs[MAX_ENCOUNTER])
 // this function is called, noting that a trap/vampire is set as he ENTERS a city
 void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type)
 {
-  int i;
-  for(i = 0; i < TRAIL_SIZE; i++)
-  {
-    if(currentView->encs[i].tRound == 0)
-    {
-      currentView->encs[i].type = type;
-      currentView->encs[i].tRound = giveMeTheRound(currentView);
-      currentView->encs[i].tLoc = whereIs(currentView, PLAYER_DRACULA);
-    }
-  }
+  updateEncs(currentView, encs);
+  currentView->encs[0].type = type;
+  currentView->encs[0].tLoc = giveMeTheRound(currentView);
 }
 
 // Checks if a trap falls off the trail/vampire matures.
@@ -73,14 +61,15 @@ void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE])
 {
   int i;
 
-  for(i = 0; i < TRAIL_SIZE; i++)
+  for(i = 0; i < TRAIL_SIZE - 1; i++)
   {
-    if(currentView->encs[i].tRound + TRAIL_SIZE <= giveMeTheRound(currentView))
-    {
-      currentView->encs[i].type = NOSET;
-      currentView->encs[i].tRound = 0;
-      currentView->encs[i].tLoc = -1;
-    }
+    currentView->encs[i+1] = currentView->encs[i];
+    // if(currentView->encs[i].tRound + TRAIL_SIZE <= giveMeTheRound(currentView))
+    // {
+    //   currentView->encs[i].type = NOSET;
+    //   currentView->encs[i].tRound = 0;
+    //   currentView->encs[i].tLoc = -1;
+    // }
   }
 }
 
@@ -207,7 +196,7 @@ LocationID whereIs(DracView currentView, PlayerID player)
         getHistory(currentView->newGV, PLAYER_DRACULA, ret);
         switch (curLoc) {
             // Hide
-            case HIDE: curLoc = ret[1];
+            case HIDE:          curLoc = ret[1];
                 break;
             //DB 1
             case DOUBLE_BACK_1: curLoc = ret[1];
@@ -244,7 +233,10 @@ void lastMove(DracView currentView, PlayerID player,
 void whatsThere(DracView currentView, LocationID where,
                          int *numTraps, int *numVamps)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
+    int traps = 0;
+    int vamps = 0;
+    int i;
+    //for ( i = 0; currentView->encs[i] )
     return;
 }
 
@@ -273,15 +265,38 @@ LocationID *whereCanIgo(DracView currentView, int *numLocations, int road, int s
   LocationID *ret = malloc(sizeof(LocationID)*NUM_MAP_LOCATIONS);
   LocationID trailcheck[TRAIL_SIZE];
   giveMeTheTrail(currentView, PLAYER_DRACULA, trailcheck);
+
   LocationID *toCheck = connectedLocations(currentView->newGV, numLocations,
     whereIs(currentView, PLAYER_DRACULA), PLAYER_DRACULA,
       giveMeTheRound(currentView), road, 0, sea);
-  int i = 0, index = 0;
-  for (; toCheck[i] != -1; i++ ) {
-    if ( CheckUniqueLoc(trailcheck, toCheck[i])
-      && toCheck[i] != ST_JOSEPH_AND_ST_MARYS ) {
-      ret[index] = toCheck[i];
-      index++;
+
+  int i, index = 0;
+  int DB = FALSE, HD = FALSE;
+  //Check if the most recent move is not a DB or HD
+  for (i = 1; i < TRAIL_SIZE; i++) {
+    if ( trailcheck[i] == HIDE ) HD = TRUE;
+    if ( trailcheck[i] > HIDE && trailcheck[i] < TELEPORT )
+      DB = TRUE;
+  }
+  for (i = 0; toCheck[i] != -1; i++ ) {
+    if ( HD && DB ) {
+      if ( CheckUniqueLoc(trailcheck, toCheck[i])
+        && toCheck[i] != ST_JOSEPH_AND_ST_MARYS ) {
+        ret[index] = toCheck[i];
+        index++;
+      }
+    } else {
+      //Latest move is a DOUBLE BACK move
+      if ( toCheck[0] >= DOUBLE_BACK_1 && toCheck[0] <= DOUBLE_BACK_5 ) {
+        int dist = 5 - (DOUBLE_BACK_5 - toCheck[0]);
+        ret[index] = trailcheck[dist];
+        index++;
+      } if ( toCheck[0] == HIDE ) {
+          if ( idToType(trailcheck[1]) != SEA ) {
+            ret[index] = trailcheck[1];
+            index++;
+          }
+      }
     }
   }
   numLocations = &index + 1;
