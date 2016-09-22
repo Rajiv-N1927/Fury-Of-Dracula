@@ -12,12 +12,12 @@
 #define MAX_TRAPS 3
 #define MAX_ENCOUNTER 6
 
-typedef struct trap {
-  Round tRound;
-  LocationID tLoc;
-} Trap;
+#define IMM_VAMP 0
+#define SET_TRAP 1
+#define NOSET    2
 
 typedef struct encounter {
+  int type;
   Round tRound;
   LocationID tLoc;      // DOES THIS BELONG IN GAMEVIEW?
 } Encounter;
@@ -26,18 +26,14 @@ typedef struct encounter {
 struct dracView {
   //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
   GameView newGV;
-  LocationID curPos;  //Might need this
-  Trap traps[MAX_TRAPS];
   Encounter encs[MAX_ENCOUNTER];
-
 };
 // Location and round where/when trap was set
 // To be stored in traps[]
 void initEncounters(Encounter encs[MAX_ENCOUNTER]);
-void initTraps(Trap traps[MAX_TRAPS]);
-void setEnc(DracView currentView, Trap encs[TRAIL_SIZE]);
+void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type);
 int CheckUniqueLoc ( LocationID *arr, LocationID lID );
-void updateTraps(DracView currentView, Trap encs[TRAIL_SIZE]);
+void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE]);
 
 //// Trap functions
 
@@ -47,19 +43,9 @@ void initEncounters(Encounter encs[MAX_ENCOUNTER])
   int i;
   for(i = 0; i < TRAIL_SIZE; i++)
   {
+    encs[i].type = NOSET;
     encs[i].tRound = 0;
     encs[i].tLoc = -1;
-  }
-}
-
-void initTraps(Trap traps[MAX_TRAPS])
-{
-  int i;
-  // Not sure if this is necessary
-  for(i = 0; i < TRAIL_SIZE; i++)
-  {
-    traps[i].tRound = 0;
-    traps[i].tLoc = -1;
   }
 }
 
@@ -67,31 +53,33 @@ void initTraps(Trap traps[MAX_TRAPS])
 // then adds the new encounter to traps[]/vamps[]
 // This functions assumes that Dracula's position is updated before
 // this function is called, noting that a trap/vampire is set as he ENTERS a city
-void setEnc(DracView currentView, Trap encs[TRAIL_SIZE])
+void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type)
 {
   int i;
   for(i = 0; i < TRAIL_SIZE; i++)
   {
-    if(currentView->encs[i] == 0)
+    if(currentView->encs[i].tRound == 0)
     {
+      currentView->encs[i].type = type;
       currentView->encs[i].tRound = giveMeTheRound(currentView);
-      currentView->encs[i].tLoc = // curPos[PLAYER_DRACULA];
-    } 
+      currentView->encs[i].tLoc = whereIs(currentView, PLAYER_DRACULA);
+    }
   }
 }
 
 // Checks if a trap falls off the trail/vampire matures.
 // Should be called at the start of every round.
-void updateTraps(DracView currentView, Trap traps[TRAIL_SIZE])
+void updateEncs(DracView currentView, Encounter encs[TRAIL_SIZE])
 {
   int i;
 
   for(i = 0; i < TRAIL_SIZE; i++)
   {
-    if(currentView->traps[i].tRound + TRAIL_SIZE <= giveMeTheRound(currentView))
+    if(currentView->encs[i].tRound + TRAIL_SIZE <= giveMeTheRound(currentView))
     {
-      currentView->traps[i].tRound = 0;
-      currentView->traps[i].tLoc = -1;
+      currentView->encs[i].type = NOSET;
+      currentView->encs[i].tRound = 0;
+      currentView->encs[i].tLoc = -1;
     }
   }
 }
@@ -102,7 +90,6 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     DracView dracView = malloc(sizeof(struct dracView));
-    initTraps(dracView->traps);
     initEncounters(dracView->encs);
 
     // THE BELOW WAS TAKEN FROM GAMEVIEW AND HAS TO BE TWEAKED FOR DRACVIEW
@@ -186,7 +173,7 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 // Frees all memory previously allocated for the DracView toBeDeleted
 void disposeDracView(DracView toBeDeleted)
 {
-    //COMPLETE THIS IMPLEMENTATION
+    free(toBeDeleted->newGV);
     free( toBeDeleted );
 }
 
@@ -208,7 +195,7 @@ int giveMeTheScore(DracView currentView)
 // Get the current health points for a given player
 int howHealthyIs(DracView currentView, PlayerID player)
 {
-  return getLocation(currentView->newGV, player);
+  return getHealth(currentView->newGV, player);
 }
 
 // Get the current location id of a given player
@@ -287,7 +274,7 @@ LocationID *whereCanIgo(DracView currentView, int *numLocations, int road, int s
   LocationID trailcheck[TRAIL_SIZE];
   giveMeTheTrail(currentView, PLAYER_DRACULA, trailcheck);
   LocationID *toCheck = connectedLocations(currentView->newGV, numLocations,
-    currentView->curPos, PLAYER_DRACULA,
+    whereIs(currentView, PLAYER_DRACULA), PLAYER_DRACULA,
       giveMeTheRound(currentView), road, 0, sea);
   int i = 0, index = 0;
   for (; toCheck[i] != -1; i++ ) {
@@ -305,7 +292,13 @@ LocationID *whereCanIgo(DracView currentView, int *numLocations, int road, int s
 LocationID *whereCanTheyGo(DracView currentView, int *numLocations,
                            PlayerID player, int road, int rail, int sea)
 {
-  return connectedLocations(currentView->newGV, numLocations,
-    whereIs(currentView, player), player, giveMeTheRound(currentView),
-      road, rail, sea);
+  LocationID *where;
+  if ( player == PLAYER_DRACULA ) {
+    where = whereCanIgo(currentView, numLocations, road, sea);
+  } else {
+    connectedLocations(currentView->newGV, numLocations,
+      whereIs(currentView, player), player, giveMeTheRound(currentView),
+        road, rail, sea);
+  }
+  return where;
 }
