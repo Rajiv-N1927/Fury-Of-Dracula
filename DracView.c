@@ -303,7 +303,7 @@ LocationID *whereCanTheyGo(DracView currentView, int *numLocations,
   if ( player == PLAYER_DRACULA ) {
     where = whereCanIgo(currentView, numLocations, road, sea);
   } else {
-    connectedLocations(currentView->newGV, numLocations,
+    where = connectedLocations(currentView->newGV, numLocations,
       whereIs(currentView, player), player, giveMeTheRound(currentView),
         road, rail, sea);
   }
