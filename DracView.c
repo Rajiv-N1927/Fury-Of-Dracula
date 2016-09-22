@@ -52,7 +52,7 @@ void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type)
 {
   updateEncs(currentView, encs);
   currentView->encs[0].type = type;
-  currentView->encs[0].tLoc = giveMeTheRound(currentView);
+  currentView->encs[0].tLoc = whereIs(currentView, PLAYER_DRACULA);
 }
 
 // Checks if a trap falls off the trail/vampire matures.
@@ -191,42 +191,27 @@ int howHealthyIs(DracView currentView, PlayerID player)
 LocationID whereIs(DracView currentView, PlayerID player)
 {
   LocationID curLoc = getLocation(currentView->newGV, player);
-  if (curLoc >= HIDE && curLoc <= TELEPORT) {
-        LocationID ret[TRAIL_SIZE];
-        getHistory(currentView->newGV, PLAYER_DRACULA, ret);
-        switch (curLoc) {
-            // Hide
-            case HIDE:          curLoc = ret[1];
-                break;
-            //DB 1
-            case DOUBLE_BACK_1: curLoc = ret[1];
-                break;
-            //DB 2
-            case DOUBLE_BACK_2: curLoc = ret[2];
-                break;
-            //DB 3
-            case DOUBLE_BACK_3: curLoc = ret[3];
-                break;
-            //DB 4
-            case DOUBLE_BACK_4: curLoc = ret[4];
-                break;
-            //DB 5
-            case DOUBLE_BACK_5: curLoc = ret[5];
-              break;
-            // Tele Castle Dracula
-            case TELEPORT: curLoc = CASTLE_DRACULA;
-              break;
-        }
+  if ( player == PLAYER_DRACULA ) {
+    LocationID ret[TRAIL_SIZE];
+    getHistory(currentView->newGV, PLAYER_DRACULA, ret);
+    if ( curLoc >= DOUBLE_BACK_1 && curLoc <= DOUBLE_BACK_5) {
+      int dist = 5 - (DOUBLE_BACK_5 - curLoc);
+      curLoc = ret[dist];
     }
-    return curLoc;
+    else if ( curLoc == HIDE ) curLoc = ret[1];
+    else if ( curLoc == TELEPORT ) curLoc = CASTLE_DRACULA;
+  }
+  return curLoc;
 }
 
 // Get the most recent move of a given player
 void lastMove(DracView currentView, PlayerID player,
                  LocationID *start, LocationID *end)
 {
-    //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return;
+  LocationID *trail = NULL;
+  getHistory(currentView->newGV, player, trail);
+  *start = trail[0];
+  *end = trail[1];
 }
 
 // Find out what minions are placed at the specified location
@@ -236,8 +221,12 @@ void whatsThere(DracView currentView, LocationID where,
     int traps = 0;
     int vamps = 0;
     int i;
-    //for ( i = 0; currentView->encs[i] )
-    return;
+    for ( i = 0; i < TRAIL_SIZE; i++ ) {
+      if ( currentView->encs[i].type == IMM_VAMP ) vamps++;
+      if ( currentView->encs[i].type == SET_TRAP ) traps++;
+    }
+    *numTraps = vamps;
+    *numVamps = traps;
 }
 
 //// Functions that return information about the history of the game
@@ -287,19 +276,22 @@ LocationID *whereCanIgo(DracView currentView, int *numLocations, int road, int s
       }
     } else {
       //Latest move is a DOUBLE BACK move
-      if ( toCheck[0] >= DOUBLE_BACK_1 && toCheck[0] <= DOUBLE_BACK_5 ) {
+      if ( (toCheck[0] >= DOUBLE_BACK_1 && toCheck[0] <= DOUBLE_BACK_5) ) {
         int dist = 5 - (DOUBLE_BACK_5 - toCheck[0]);
-        ret[index] = trailcheck[dist];
-        index++;
+        if ( DB == FALSE ) {
+          ret[index] = trailcheck[dist];
+          index++;
+        }
       } if ( toCheck[0] == HIDE ) {
-          if ( idToType(trailcheck[1]) != SEA ) {
-            ret[index] = trailcheck[1];
-            index++;
-          }
+          //Make sure its not a sea
+        if ( idToType(trailcheck[1]) != SEA  && HD == FALSE ) {
+          ret[index] = trailcheck[1];
+          index++;
+        }
       }
     }
   }
-  numLocations = &index + 1;
+  *numLocations = index + 1;
   return ret;
 }
 
