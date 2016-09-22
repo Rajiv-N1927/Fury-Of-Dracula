@@ -10,7 +10,8 @@
 // #include "Map.h" ... if you decide to use the Map ADT
 
 struct hunterView {
-    int hello;
+    GameView newGV;
+
 };
 
 
@@ -19,7 +20,11 @@ HunterView newHunterView(char *pastPlays, PlayerMessage messages[])
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
     HunterView hunterView = malloc(sizeof(struct hunterView));
-    hunterView->hello = 42;
+    
+    /*
+        GAMEVIEW STYLE PARSE???
+    */
+
     return hunterView;
 }
 
@@ -28,7 +33,8 @@ HunterView newHunterView(char *pastPlays, PlayerMessage messages[])
 void disposeHunterView(HunterView toBeDeleted)
 {
     //COMPLETE THIS IMPLEMENTATION
-    free( toBeDeleted );
+    free(toBeDeleted->newGV);
+    free(toBeDeleted);
 }
 
 
@@ -38,35 +44,35 @@ void disposeHunterView(HunterView toBeDeleted)
 Round giveMeTheRound(HunterView currentView)
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return getRound(currentView->newGV);
 }
 
 // Get the id of current player
 PlayerID whoAmI(HunterView currentView)
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return getCurrentPlayer(currentView->newGV);
 }
 
 // Get the current score
 int giveMeTheScore(HunterView currentView)
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return getScore(currentView->newGV);
 }
 
 // Get the current health points for a given player
 int howHealthyIs(HunterView currentView, PlayerID player)
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return getHealth(currentView->newGV, player);
 }
 
 // Get the current location id of a given player
 LocationID whereIs(HunterView currentView, PlayerID player)
 {
     //REPLACE THIS WITH YOUR OWN IMPLEMENTATION
-    return 0;
+    return getLocation(currentView->newGV, player);
 }
 
 //// Functions that return information about the history of the game
