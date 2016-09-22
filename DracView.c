@@ -59,7 +59,7 @@ void initEncounters(Encounter encs[TRAIL_SIZE])
 void rmTrpNVmp(DracView currentView, PlayerID player, Encounter encs[TRAIL_SIZE], LocationID curLoc) {
   int i;
   for ( i = 0; i < TRAIL_SIZE; i++ ) {
-      if ( (whereIs(currentView, player) == currentView->encs[i].tLoc) ) {
+      if ( curLoc == currentView->encs[i].tLoc) ) {
         if ( currentView->encs[i].type == SET_TRAP && trapsHit <= 3 )
           currentView->encs[i].type = NOSET;
           trapsHit++;
@@ -84,7 +84,7 @@ void setEnc(DracView currentView, Encounter encs[TRAIL_SIZE], int type, Location
 {
   updateEncs(currentView, encs);
   currentView->encs[0].type = type;
-  currentView->encs[0].tLoc = whereIs(currentView, PLAYER_DRACULA);
+  currentView->encs[0].tLoc = curLoc;
 }
 
 // Checks if a trap falls off the trail/vampire matures.
