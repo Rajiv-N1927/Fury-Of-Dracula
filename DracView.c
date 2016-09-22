@@ -136,7 +136,7 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
       PlayerID currentPlayer;
 
       switch(pastPlays[turnIndex]) {
-        
+
           case 'G': currentPlayer = PLAYER_LORD_GODALMING;
             break;
           case 'S': currentPlayer = PLAYER_DR_SEWARD;
@@ -160,9 +160,10 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
 
         actionIndex += 2; 
  
+        actionLoop = 0; 
 
         if (currentPlayer == PLAYER_DRACULA) {
-                actionLoop = 0;
+                
                 while (actionLoop < 2) { // placement phase i.e. if trap or vamp was placed
 
                     if (pastPlays[actionIndex] == 'V') { // vamp placed
@@ -196,8 +197,7 @@ DracView newDracView(char *pastPlays, PlayerMessage messages[])
                     actionLoop++;
               }
         } else { // hunters 
-          actionLoop = 0;
-          actionIndex = turnIndex + 3;
+
           while (actionLoop < 4) { // placement phase i.e. if trap or vamp was placed
               if (pastPlays[actionIndex] == 'V') { // vamp placed
                 rmTrpNVmp(currentView, currentPlayer,
