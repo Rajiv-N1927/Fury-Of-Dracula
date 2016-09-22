@@ -1,6 +1,7 @@
 // HunterView.c ... HunterView ADT implementation
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include "Globals.h"
 #include "Game.h"
@@ -102,8 +103,11 @@ LocationID *whereCanIgo(HunterView currentView, int *numLocations,
 LocationID *whereCanTheyGo(HunterView currentView, int *numLocations,
                            PlayerID player, int road, int rail, int sea)
 {
-  PlayerID whome = whoAmI(currentView);
+  PlayerID whome = whoAmI(currentView)-1;
+  printf("PLAYERID: %d\n", whome);
+  LocationID loc = whereIs(currentView, whome);
+  printf("%d %s\n",whome, idToName(loc));
   return connectedLocations(currentView->newGV, numLocations,
-    whereIs(currentView, whome), whome, giveMeTheRound(currentView),
+    loc, whome, giveMeTheRound(currentView),
       road, rail, sea);
 }
